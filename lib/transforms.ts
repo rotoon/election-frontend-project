@@ -9,6 +9,7 @@ import type { ApiCandidate, ApiConstituency, ApiParty } from '@/types'
 export interface TransformedConstituency {
   id: number
   province: string
+  provinceId: number
   zone_number: number
   is_poll_open: boolean
 }
@@ -19,6 +20,7 @@ export function transformConstituency(
   return {
     id: c.id,
     province: c.province?.name || `จังหวัด ${c.provinceId}`,
+    provinceId: c.provinceId,
     zone_number: c.number,
     is_poll_open: !c.isClosed,
   }

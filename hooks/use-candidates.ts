@@ -25,15 +25,11 @@ export function useCandidates(constituencyId?: string | number | null) {
 }
 
 // Hook to fetch Candidates (EC Management - Paginated with search/sort)
-export function useManageCandidates(
-  params: GetCandidatesQuery & {
-    constituencyId?: string | number | null
-    partyId?: string | number | null
-  },
-) {
+export function useManageCandidates(params: GetCandidatesQuery) {
   const {
     constituencyId,
     partyId,
+    provinceId,
     page = 1,
     limit = 10,
     search,
@@ -46,6 +42,7 @@ export function useManageCandidates(
       'manage-candidates',
       constituencyId,
       partyId,
+      provinceId,
       page,
       limit,
       search,
@@ -62,6 +59,10 @@ export function useManageCandidates(
       if (order) queryParams.set('order', order)
       if (partyId && partyId !== 'all')
         queryParams.set('partyId', partyId.toString())
+      if (constituencyId && constituencyId !== 'all')
+        queryParams.set('constituencyId', constituencyId.toString())
+      if (provinceId && provinceId !== 'all')
+        queryParams.set('provinceId', provinceId.toString())
 
       const { data } = await api.get(`/ec/candidates?${queryParams.toString()}`)
 

@@ -13,7 +13,10 @@ export function useConstituencies() {
     queryKey: ['constituencies'],
     queryFn: async () => {
       const { data } = await api.get('/ec/constituencies')
-      return transformConstituencies(data.data || []) as Constituency[]
+
+      const rawData =
+        data.data || data.constituency || (Array.isArray(data) ? data : [])
+      return transformConstituencies(rawData) as Constituency[]
     },
   })
 }

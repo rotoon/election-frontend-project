@@ -42,7 +42,7 @@ export function CandidateCard({
         {candidate.image_url ? (
           <Image
             src={candidate.image_url}
-            alt={candidate.full_name}
+            alt={candidate.full_name || 'รูปผู้สมัคร'}
             width={400}
             height={300}
             className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-105'

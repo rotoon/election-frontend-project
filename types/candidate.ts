@@ -1,10 +1,11 @@
-import { PaginationMeta } from "./common"
+import { PaginationMeta } from './common'
 
 // === GET Response Types ===
 
 /** แต่ละ item ใน list จาก GET /ec/candidates */
 export interface CandidateItem {
   id: number
+  citizenId: string
   number: number
   firstName: string
   lastName: string
@@ -37,14 +38,18 @@ export interface GetCandidatesQuery {
   page?: number
   limit?: number
   search?: string
-  sortBy?: "id" | "number" | "firstName" | "lastName"
-  order?: "asc" | "desc"
+  sortBy?: 'id' | 'number' | 'firstName' | 'lastName'
+  order?: 'asc' | 'desc'
+  partyId?: number | string
+  constituencyId?: number | string
+  provinceId?: number | string
 }
 
 // === Mutation Payload Types ===
 
 /** สร้างผู้สมัคร POST /ec/candidates */
 export interface CreateCandidatePayload {
+  citizenId: string
   number: number
   firstName: string
   lastName: string
@@ -56,6 +61,7 @@ export interface CreateCandidatePayload {
 
 /** แก้ไขผู้สมัคร PATCH /ec/candidates/:id (Partial) */
 export interface UpdateCandidatePayload {
+  citizenId?: string
   number?: number
   firstName?: string
   lastName?: string
@@ -72,6 +78,7 @@ export interface MutateCandidateResponse {
   message: string
   data: {
     id: number
+    citizenId: string
     number: number
     firstName: string
     lastName: string

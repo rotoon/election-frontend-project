@@ -30,6 +30,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
+import { ImageUpload } from '@/components/ui/image-upload'
 import {
   useCreateCandidateMutation,
   useDeleteCandidateMutation,
@@ -37,6 +38,7 @@ import {
   useUpdateCandidateMutation,
 } from '@/hooks/use-candidates'
 
+import { ImagePreviewDialog } from '@/components/shared/image-preview-dialog'
 import { useConstituencies } from '@/hooks/use-constituencies'
 import { useProvinces } from '@/hooks/use-location'
 import { useParties } from '@/hooks/use-parties'
@@ -78,7 +80,10 @@ function CandidatesPageSkeleton() {
       </div>
       <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
+          <div
+            key={i}
+            className='h-12 bg-slate-100 rounded animate-pulse'
+          />
         ))}
       </div>
     </div>
@@ -98,14 +103,9 @@ function CandidatesPageContent() {
   )
   const [search, setSearch] = useState(searchParams.get('search') || '')
   const [debouncedSearch, setDebouncedSearch] = useState(search)
-  const [sortBy, setSortBy] = useState<
-    'id' | 'number' | 'firstName' | 'lastName'
-  >(
-    (searchParams.get('sortBy') as
-      | 'id'
-      | 'number'
-      | 'firstName'
-      | 'lastName') || 'id',
+  const [sortBy, setSortBy] = useState<'number' | 'firstName' | 'lastName'>(
+    (searchParams.get('sortBy') as 'number' | 'firstName' | 'lastName') ||
+      'firstName',
   )
   const [order, setOrder] = useState<'asc' | 'desc'>(
     (searchParams.get('order') as 'asc' | 'desc') || 'asc',
@@ -115,6 +115,9 @@ function CandidatesPageContent() {
   )
   const [filterProvince, setFilterProvince] = useState<string>(
     searchParams.get('province') || 'all',
+  )
+  const [filterConstituency, setFilterConstituency] = useState<string>(
+    searchParams.get('constituency') || 'all',
   )
 
   // Debounce search
@@ -132,10 +135,12 @@ function CandidatesPageContent() {
     if (currentPage !== 1) params.set('page', currentPage.toString())
     if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
     if (debouncedSearch) params.set('search', debouncedSearch)
-    if (sortBy !== 'id') params.set('sortBy', sortBy)
+    if (sortBy !== 'firstName') params.set('sortBy', sortBy)
     if (order !== 'asc') params.set('order', order)
     if (filterParty !== 'all') params.set('party', filterParty)
     if (filterProvince !== 'all') params.set('province', filterProvince)
+    if (filterConstituency !== 'all')
+      params.set('constituency', filterConstituency)
 
     const queryString = params.toString()
     router.push(queryString ? `?${queryString}` : '/ec/candidates', {
@@ -149,6 +154,7 @@ function CandidatesPageContent() {
     order,
     filterParty,
     filterProvince,
+    filterConstituency,
     router,
   ])
 
@@ -164,15 +170,18 @@ function CandidatesPageContent() {
     sortBy,
     order,
     partyId: filterParty,
+    provinceId: filterProvince,
+    constituencyId: filterConstituency,
   })
   const { data: parties } = useParties()
   const { data: provinces } = useProvinces()
-  const { data: constituencies } = useConstituencies()
+  const {
+    data: constituencies,
+    isLoading: constLoading,
+    error: constError,
+  } = useConstituencies()
 
-  const candidates = (data?.candidates || []).filter((c) => {
-    if (filterProvince === 'all') return true
-    return c.constituency?.province?.name === filterProvince
-  })
+  const candidates = data?.candidates || []
   const meta = data?.meta || {
     total: 0,
     page: 1,
@@ -188,9 +197,11 @@ function CandidatesPageContent() {
   // Dialog state
   const [isOpen, setIsOpen] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
 
   // Form state
   const [editId, setEditId] = useState<number | null>(null)
+  const [citizenId, setCitizenId] = useState('')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [number, setNumber] = useState('')
@@ -201,6 +212,7 @@ function CandidatesPageContent() {
   const [candidatePolicy, setCandidatePolicy] = useState('')
 
   const resetForm = () => {
+    setCitizenId('')
     setFirstName('')
     setLastName('')
     setNumber('')
@@ -215,6 +227,7 @@ function CandidatesPageContent() {
 
   const handleEdit = (c: CandidateItem) => {
     setEditId(c.id)
+    setCitizenId(c.citizenId || '')
     setFirstName(c.firstName)
     setLastName(c.lastName)
     setNumber(c.number.toString())
@@ -229,8 +242,21 @@ function CandidatesPageContent() {
   }
 
   async function handleSubmit() {
-    if (!firstName || !lastName || !number || !partyId || !constituencyId) {
+    if (
+      !citizenId ||
+      !firstName ||
+      !lastName ||
+      !number ||
+      !partyId ||
+      !constituencyId ||
+      !imageUrl
+    ) {
       toast.error('กรุณากรอกข้อมูลสำคัญให้ครบ')
+      return
+    }
+
+    if (citizenId.length !== 13) {
+      toast.error('เลขบัตรประชาชนต้อง 13 หลัก')
       return
     }
 
@@ -245,6 +271,7 @@ function CandidatesPageContent() {
         {
           id: editId,
           payload: {
+            citizenId,
             number: parseInt(number),
             firstName,
             lastName,
@@ -264,6 +291,7 @@ function CandidatesPageContent() {
     } else {
       // POST
       const payload: CreateCandidatePayload = {
+        citizenId,
         number: parseInt(number),
         firstName,
         lastName,
@@ -297,7 +325,7 @@ function CandidatesPageContent() {
     setCurrentPage(1)
   }
 
-  const toggleSort = (field: 'id' | 'number' | 'firstName' | 'lastName') => {
+  const toggleSort = (field: 'number' | 'firstName' | 'lastName') => {
     if (sortBy === field) {
       setOrder(order === 'asc' ? 'desc' : 'asc')
     } else {
@@ -351,10 +379,33 @@ function CandidatesPageContent() {
               </DialogDescription>
             </DialogHeader>
             <div className='grid gap-6 py-6'>
+              {/* Row 0: เลขบัตรประชาชน */}
+              <div className='space-y-2'>
+                <Label
+                  htmlFor='citizenId'
+                  className='text-sm font-semibold'
+                >
+                  เลขบัตรประชาชน 13 หลัก
+                </Label>
+                <Input
+                  id='citizenId'
+                  value={citizenId}
+                  onChange={(e) =>
+                    setCitizenId(e.target.value.replace(/\D/g, '').slice(0, 13))
+                  }
+                  placeholder='เช่น 1234567890123'
+                  maxLength={13}
+                  className='bg-slate-50/50 focus:bg-white transition-colors font-mono tracking-widest'
+                />
+              </div>
+
               {/* Row 1: ชื่อ-นามสกุล */}
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label htmlFor='fname' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='fname'
+                    className='text-sm font-semibold'
+                  >
                     ชื่อ
                   </Label>
                   <Input
@@ -366,7 +417,10 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='lname' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='lname'
+                    className='text-sm font-semibold'
+                  >
                     นามสกุล
                   </Label>
                   <Input
@@ -395,7 +449,10 @@ function CandidatesPageContent() {
                     </SelectTrigger>
                     <SelectContent className='max-h-[250px]'>
                       {provinces?.map((pv) => (
-                        <SelectItem key={pv.id} value={pv.name}>
+                        <SelectItem
+                          key={pv.id}
+                          value={pv.name}
+                        >
                           {pv.name}
                         </SelectItem>
                       ))}
@@ -403,7 +460,10 @@ function CandidatesPageContent() {
                   </Select>
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='c_id' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='c_id'
+                    className='text-sm font-semibold'
+                  >
                     เขตเลือกตั้ง
                   </Label>
                   <Select
@@ -422,7 +482,10 @@ function CandidatesPageContent() {
                       {constituencies
                         ?.filter((c) => c.province === formProvince)
                         .map((c) => (
-                          <SelectItem key={c.id} value={c.id.toString()}>
+                          <SelectItem
+                            key={c.id}
+                            value={c.id.toString()}
+                          >
                             เขต {c.zone_number}
                           </SelectItem>
                         ))}
@@ -432,7 +495,10 @@ function CandidatesPageContent() {
               </div>
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label htmlFor='number' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='number'
+                    className='text-sm font-semibold'
+                  >
                     หมายเลขผู้สมัคร
                   </Label>
                   <Input
@@ -446,16 +512,25 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='party' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='party'
+                    className='text-sm font-semibold'
+                  >
                     พรรคสังกัด
                   </Label>
-                  <Select value={partyId} onValueChange={setPartyId}>
+                  <Select
+                    value={partyId}
+                    onValueChange={setPartyId}
+                  >
                     <SelectTrigger className='bg-slate-50/50 w-full'>
                       <SelectValue placeholder='เลือกพรรค' />
                     </SelectTrigger>
                     <SelectContent>
                       {parties?.map((p) => (
-                        <SelectItem key={p.id} value={p.id.toString()}>
+                        <SelectItem
+                          key={p.id}
+                          value={p.id.toString()}
+                        >
                           {p.name}
                         </SelectItem>
                       ))}
@@ -464,46 +539,24 @@ function CandidatesPageContent() {
                 </div>
               </div>
 
-              {/* Row 3: รูป URL + Preview */}
-              <div className='flex flex-col lg:flex-row gap-4'>
-                <div className='flex-1 space-y-2'>
-                  <Label htmlFor='img' className='text-sm font-semibold'>
-                    รูปโปรไฟล์ (URL)
-                  </Label>
-                  <Input
-                    id='img'
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder='https://...'
-                    className='bg-slate-50/50 focus:bg-white transition-colors'
-                  />
-                </div>
-                <div className='flex flex-col items-center justify-center p-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/30 w-full lg:w-40 h-40'>
-                  {imageUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={imageUrl}
-                      alt='Preview'
-                      className='w-full h-full object-cover rounded-md'
-                      onError={(e) => {
-                        ;(e.target as HTMLImageElement).src =
-                          'https://placehold.co/160?text=Invalid+URL'
-                      }}
-                    />
-                  ) : (
-                    <div className='flex flex-col items-center text-slate-400'>
-                      <User className='w-10 h-10 mb-2' />
-                      <span className='text-[10px] uppercase font-bold tracking-wider'>
-                        Photo Preview
-                      </span>
-                    </div>
-                  )}
-                </div>
+              {/* Row 3: รูปโปรไฟล์ */}
+              <div className='space-y-2'>
+                <Label className='text-sm font-semibold'>รูปโปรไฟล์</Label>
+                <ImageUpload
+                  value={imageUrl}
+                  onChange={setImageUrl}
+                  folder='candidates'
+                  disabled={isMutating}
+                  placeholder='คลิกหรือลากรูปผู้สมัครมาวาง'
+                />
               </div>
 
               {/* Row 4: นโยบาย */}
               <div className='space-y-2'>
-                <Label htmlFor='policy' className='text-sm font-semibold'>
+                <Label
+                  htmlFor='policy'
+                  className='text-sm font-semibold'
+                >
                   นโยบายส่วนตัว{' '}
                   <span className='text-xs text-muted-foreground font-normal'>
                     (ถ้าไม่ระบุ จะใช้นโยบายของพรรค)
@@ -571,7 +624,10 @@ function CandidatesPageContent() {
             <SelectContent>
               <SelectItem value='all'>ทุกพรรค</SelectItem>
               {parties?.map((p) => (
-                <SelectItem key={p.id} value={p.id.toString()}>
+                <SelectItem
+                  key={p.id}
+                  value={p.id.toString()}
+                >
                   {p.name}
                 </SelectItem>
               ))}
@@ -585,6 +641,7 @@ function CandidatesPageContent() {
             value={filterProvince}
             onValueChange={(v) => {
               setFilterProvince(v)
+              setFilterConstituency('all')
               setCurrentPage(1)
             }}
           >
@@ -594,13 +651,46 @@ function CandidatesPageContent() {
             <SelectContent className='max-h-[250px]'>
               <SelectItem value='all'>ทุกจังหวัด</SelectItem>
               {provinces?.map((pv) => (
-                <SelectItem key={pv.id} value={pv.name}>
+                <SelectItem
+                  key={pv.id}
+                  value={pv.id.toString()}
+                >
                   {pv.name}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
+
+        {/* Constituency Filter */}
+        {filterProvince !== 'all' && (
+          <div className='flex items-center gap-2'>
+            <Select
+              value={filterConstituency}
+              onValueChange={(v) => {
+                setFilterConstituency(v)
+                setCurrentPage(1)
+              }}
+            >
+              <SelectTrigger className='w-[160px]'>
+                <SelectValue placeholder='เลือกเขต' />
+              </SelectTrigger>
+              <SelectContent className='max-h-[250px]'>
+                <SelectItem value='all'>ทุกเขต</SelectItem>
+                {constituencies
+                  ?.filter((c) => c.provinceId.toString() === filterProvince)
+                  .map((c) => (
+                    <SelectItem
+                      key={c.id}
+                      value={c.id.toString()}
+                    >
+                      เขต {c.zone_number}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Sort */}
         <div className='flex items-center gap-2'>
@@ -610,7 +700,7 @@ function CandidatesPageContent() {
           <Select
             value={sortBy}
             onValueChange={(v) => {
-              setSortBy(v as 'id' | 'number' | 'firstName' | 'lastName')
+              setSortBy(v as 'number' | 'firstName' | 'lastName')
               setCurrentPage(1)
             }}
           >
@@ -618,7 +708,6 @@ function CandidatesPageContent() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value='id'>ID</SelectItem>
               <SelectItem value='number'>เบอร์</SelectItem>
               <SelectItem value='firstName'>ชื่อ</SelectItem>
               <SelectItem value='lastName'>นามสกุล</SelectItem>
@@ -654,7 +743,7 @@ function CandidatesPageContent() {
                       )}
                     </span>
                   </TableHead>
-                  <TableHead className='w-[60px] font-bold text-slate-700 px-6'>
+                  <TableHead className='font-bold text-slate-700 px-6'>
                     รูป
                   </TableHead>
                   <TableHead
@@ -683,7 +772,10 @@ function CandidatesPageContent() {
                 <AnimatePresence mode='wait'>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className='h-40 text-center'>
+                      <TableCell
+                        colSpan={6}
+                        className='h-40 text-center'
+                      >
                         <div className='flex flex-col items-center justify-center space-y-3'>
                           <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
                           <p className='text-slate-500 font-medium'>
@@ -694,7 +786,10 @@ function CandidatesPageContent() {
                     </TableRow>
                   ) : !candidates || candidates.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className='h-60 text-center'>
+                      <TableCell
+                        colSpan={6}
+                        className='h-60 text-center'
+                      >
                         <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
                           <div className='p-4 bg-slate-50 rounded-full'>
                             <Users className='w-12 h-12 text-slate-200' />
@@ -734,10 +829,15 @@ function CandidatesPageContent() {
                             <img
                               src={c.imageUrl}
                               alt={`${c.firstName} ${c.lastName}`}
-                              className='w-20 h-20 object-cover rounded-full group-hover:scale-110 transition-transform duration-300'
+                              className='w-20 h-20 object-cover rounded-lg bg-slate-50 ring-1 ring-slate-100 group-hover:scale-110 transition-transform duration-300 cursor-pointer'
+                              onClick={() => setPreviewUrl(c.imageUrl)}
+                              onError={(e) => {
+                                ;(e.target as HTMLImageElement).src =
+                                  'https://placehold.co/80x80?text=No+Image'
+                              }}
                             />
                           ) : (
-                            <div className='w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center'>
+                            <div className='w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center'>
                               <User className='w-5 h-5 text-slate-400' />
                             </div>
                           )}
@@ -804,6 +904,11 @@ function CandidatesPageContent() {
         itemsPerPage={itemsPerPage}
         onPageChange={setCurrentPage}
         onItemsPerPageChange={handleItemsPerPageChange}
+      />
+
+      <ImagePreviewDialog
+        url={previewUrl}
+        onClose={() => setPreviewUrl(null)}
       />
     </motion.div>
   )

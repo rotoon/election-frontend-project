@@ -3,6 +3,7 @@ import { PaginationMeta } from './common'
 export interface Constituency {
   id: number
   province: string
+  provinceId: number
   zone_number: number
   is_poll_open: boolean
 }

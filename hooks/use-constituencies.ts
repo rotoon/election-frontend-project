@@ -44,11 +44,24 @@ export function useManageConstituencies(params: {
         `/ec/constituencies?${queryParams.toString()}`,
       )
 
-      const rawData = data.data || []
-      const meta = data.meta || { total: 0, page: 1, limit: 10, totalPages: 1 }
+      const rawData =
+        data.data || data.constituency || (Array.isArray(data) ? data : [])
+
       const constituencies = transformConstituencies(rawData) as Constituency[]
 
-      return { constituencies, meta }
+      const meta = {
+        total: data.total ?? constituencies.length,
+        page: data.page ?? page,
+        limit: data.limit ?? limit,
+        totalPages:
+          data.totalPages ??
+          Math.max(1, Math.ceil(constituencies.length / limit)),
+      }
+
+      return {
+        constituencies,
+        meta,
+      }
     },
   })
 }

@@ -12,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -30,7 +31,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { ImageUpload } from '@/components/ui/image-upload'
 import {
   useCreateCandidateMutation,
   useDeleteCandidateMutation,
@@ -80,10 +80,7 @@ function CandidatesPageSkeleton() {
       </div>
       <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className='h-12 bg-slate-100 rounded animate-pulse'
-          />
+          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
         ))}
       </div>
     </div>
@@ -381,10 +378,7 @@ function CandidatesPageContent() {
             <div className='grid gap-6 py-6'>
               {/* Row 0: เลขบัตรประชาชน */}
               <div className='space-y-2'>
-                <Label
-                  htmlFor='citizenId'
-                  className='text-sm font-semibold'
-                >
+                <Label htmlFor='citizenId' className='text-sm font-semibold'>
                   เลขบัตรประชาชน 13 หลัก
                 </Label>
                 <Input
@@ -402,10 +396,7 @@ function CandidatesPageContent() {
               {/* Row 1: ชื่อ-นามสกุล */}
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='fname'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='fname' className='text-sm font-semibold'>
                     ชื่อ
                   </Label>
                   <Input
@@ -417,10 +408,7 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='lname'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='lname' className='text-sm font-semibold'>
                     นามสกุล
                   </Label>
                   <Input
@@ -449,10 +437,7 @@ function CandidatesPageContent() {
                     </SelectTrigger>
                     <SelectContent className='max-h-[250px]'>
                       {provinces?.map((pv) => (
-                        <SelectItem
-                          key={pv.id}
-                          value={pv.name}
-                        >
+                        <SelectItem key={pv.id} value={pv.name}>
                           {pv.name}
                         </SelectItem>
                       ))}
@@ -460,10 +445,7 @@ function CandidatesPageContent() {
                   </Select>
                 </div>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='c_id'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='c_id' className='text-sm font-semibold'>
                     เขตเลือกตั้ง
                   </Label>
                   <Select
@@ -482,10 +464,7 @@ function CandidatesPageContent() {
                       {constituencies
                         ?.filter((c) => c.province === formProvince)
                         .map((c) => (
-                          <SelectItem
-                            key={c.id}
-                            value={c.id.toString()}
-                          >
+                          <SelectItem key={c.id} value={c.id.toString()}>
                             เขต {c.zone_number}
                           </SelectItem>
                         ))}
@@ -495,10 +474,7 @@ function CandidatesPageContent() {
               </div>
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='number'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='number' className='text-sm font-semibold'>
                     หมายเลขผู้สมัคร
                   </Label>
                   <Input
@@ -512,25 +488,16 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='party'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='party' className='text-sm font-semibold'>
                     พรรคสังกัด
                   </Label>
-                  <Select
-                    value={partyId}
-                    onValueChange={setPartyId}
-                  >
+                  <Select value={partyId} onValueChange={setPartyId}>
                     <SelectTrigger className='bg-slate-50/50 w-full'>
                       <SelectValue placeholder='เลือกพรรค' />
                     </SelectTrigger>
                     <SelectContent>
                       {parties?.map((p) => (
-                        <SelectItem
-                          key={p.id}
-                          value={p.id.toString()}
-                        >
+                        <SelectItem key={p.id} value={p.id.toString()}>
                           {p.name}
                         </SelectItem>
                       ))}
@@ -553,10 +520,7 @@ function CandidatesPageContent() {
 
               {/* Row 4: นโยบาย */}
               <div className='space-y-2'>
-                <Label
-                  htmlFor='policy'
-                  className='text-sm font-semibold'
-                >
+                <Label htmlFor='policy' className='text-sm font-semibold'>
                   นโยบายส่วนตัว{' '}
                   <span className='text-xs text-muted-foreground font-normal'>
                     (ถ้าไม่ระบุ จะใช้นโยบายของพรรค)
@@ -609,8 +573,8 @@ function CandidatesPageContent() {
         </div>
 
         {/* Party Filter */}
-        <div className='flex items-center gap-2'>
-          <Filter className='h-4 w-4 text-slate-400' />
+        <div className='flex items-center gap-2 w-full sm:w-auto'>
+          <Filter className='h-4 w-4 text-slate-400 hidden sm:block' />
           <Select
             value={filterParty}
             onValueChange={(v) => {
@@ -618,16 +582,13 @@ function CandidatesPageContent() {
               setCurrentPage(1)
             }}
           >
-            <SelectTrigger className='w-[180px]'>
+            <SelectTrigger className='w-full sm:w-[180px]'>
               <SelectValue placeholder='เลือกพรรค' />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value='all'>ทุกพรรค</SelectItem>
               {parties?.map((p) => (
-                <SelectItem
-                  key={p.id}
-                  value={p.id.toString()}
-                >
+                <SelectItem key={p.id} value={p.id.toString()}>
                   {p.name}
                 </SelectItem>
               ))}
@@ -636,7 +597,7 @@ function CandidatesPageContent() {
         </div>
 
         {/* Province Filter */}
-        <div className='flex items-center gap-2'>
+        <div className='flex items-center gap-2 w-full sm:w-auto'>
           <Select
             value={filterProvince}
             onValueChange={(v) => {
@@ -645,16 +606,13 @@ function CandidatesPageContent() {
               setCurrentPage(1)
             }}
           >
-            <SelectTrigger className='w-[180px]'>
+            <SelectTrigger className='w-full sm:w-[180px]'>
               <SelectValue placeholder='เลือกจังหวัด' />
             </SelectTrigger>
             <SelectContent className='max-h-[250px]'>
               <SelectItem value='all'>ทุกจังหวัด</SelectItem>
               {provinces?.map((pv) => (
-                <SelectItem
-                  key={pv.id}
-                  value={pv.id.toString()}
-                >
+                <SelectItem key={pv.id} value={pv.id.toString()}>
                   {pv.name}
                 </SelectItem>
               ))}
@@ -664,7 +622,7 @@ function CandidatesPageContent() {
 
         {/* Constituency Filter */}
         {filterProvince !== 'all' && (
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-2 w-full sm:w-auto'>
             <Select
               value={filterConstituency}
               onValueChange={(v) => {
@@ -672,7 +630,7 @@ function CandidatesPageContent() {
                 setCurrentPage(1)
               }}
             >
-              <SelectTrigger className='w-[160px]'>
+              <SelectTrigger className='w-full sm:w-[160px]'>
                 <SelectValue placeholder='เลือกเขต' />
               </SelectTrigger>
               <SelectContent className='max-h-[250px]'>
@@ -680,10 +638,7 @@ function CandidatesPageContent() {
                 {constituencies
                   ?.filter((c) => c.provinceId.toString() === filterProvince)
                   .map((c) => (
-                    <SelectItem
-                      key={c.id}
-                      value={c.id.toString()}
-                    >
+                    <SelectItem key={c.id} value={c.id.toString()}>
                       เขต {c.zone_number}
                     </SelectItem>
                   ))}
@@ -693,8 +648,8 @@ function CandidatesPageContent() {
         )}
 
         {/* Sort */}
-        <div className='flex items-center gap-2'>
-          <span className='text-sm text-muted-foreground whitespace-nowrap'>
+        <div className='flex items-center gap-2 w-full sm:w-auto'>
+          <span className='text-sm text-muted-foreground whitespace-nowrap hidden sm:inline'>
             เรียงตาม:
           </span>
           <Select
@@ -704,7 +659,7 @@ function CandidatesPageContent() {
               setCurrentPage(1)
             }}
           >
-            <SelectTrigger className='w-[140px]'>
+            <SelectTrigger className='w-full sm:w-[140px] flex-1'>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -725,8 +680,8 @@ function CandidatesPageContent() {
         </div>
       </div>
 
-      {/* Table */}
-      <Card className='border-none shadow-xl bg-white/50 backdrop-blur-sm overflow-hidden'>
+      {/* Table (Desktop Layout) */}
+      <Card className='border-none shadow-xl bg-white/50 backdrop-blur-sm overflow-hidden hidden md:block'>
         <CardContent className='p-0'>
           <div className='overflow-x-auto'>
             <Table>
@@ -772,10 +727,7 @@ function CandidatesPageContent() {
                 <AnimatePresence mode='wait'>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className='h-40 text-center'
-                      >
+                      <TableCell colSpan={6} className='h-40 text-center'>
                         <div className='flex flex-col items-center justify-center space-y-3'>
                           <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
                           <p className='text-slate-500 font-medium'>
@@ -786,10 +738,7 @@ function CandidatesPageContent() {
                     </TableRow>
                   ) : !candidates || candidates.length === 0 ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className='h-60 text-center'
-                      >
+                      <TableCell colSpan={6} className='h-60 text-center'>
                         <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
                           <div className='p-4 bg-slate-50 rounded-full'>
                             <Users className='w-12 h-12 text-slate-200' />
@@ -896,15 +845,127 @@ function CandidatesPageContent() {
         </CardContent>
       </Card>
 
+      {/* Mobile Card Layout */}
+      <div className='grid gap-4 md:hidden'>
+        <AnimatePresence mode='wait'>
+          {isLoading ? (
+            <div className='flex flex-col items-center justify-center space-y-3 py-10 bg-white/50 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm'>
+              <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
+              <p className='text-slate-500 font-medium'>กำลังโหลดข้อมูล...</p>
+            </div>
+          ) : !candidates || candidates.length === 0 ? (
+            <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic py-12 bg-white/50 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm'>
+              <div className='p-4 bg-slate-50 rounded-full'>
+                <Users className='w-12 h-12 text-slate-200' />
+              </div>
+              <div className='text-center'>
+                <p className='text-lg font-semibold text-slate-500'>
+                  {debouncedSearch
+                    ? 'ไม่พบผู้สมัครตามคำค้นหา'
+                    : 'ไม่พบข้อมูลผู้สมัคร'}
+                </p>
+                <p className='text-sm mt-1'>
+                  {debouncedSearch
+                    ? 'ลองเปลี่ยนคำค้นหาใหม่'
+                    : 'เริ่มต้นด้วยการเพิ่มผู้สมัครใหม่ที่ปุ่มด้านบน'}
+                </p>
+              </div>
+            </div>
+          ) : (
+            candidates.map((c: CandidateItem, index: number) => (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.03 }}
+                className='bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4'
+              >
+                <div className='flex items-start gap-4'>
+                  <div className='shrink-0'>
+                    {c.imageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={c.imageUrl}
+                        alt={`${c.firstName} ${c.lastName}`}
+                        className='w-16 h-16 object-cover rounded-lg bg-slate-50 ring-1 ring-slate-100 cursor-pointer active:scale-95 transition-transform'
+                        onClick={() => setPreviewUrl(c.imageUrl)}
+                        onError={(e) => {
+                          ;(e.target as HTMLImageElement).src =
+                            'https://placehold.co/64x64?text=No+Image'
+                        }}
+                      />
+                    ) : (
+                      <div className='w-16 h-16 bg-slate-100 rounded-lg flex items-center justify-center'>
+                        <User className='w-6 h-6 text-slate-400' />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className='flex-1 min-w-0 pt-0.5'>
+                    <div className='flex items-center gap-2 mb-1.5'>
+                      <span className='inline-flex items-center justify-center w-6 h-6 rounded-full bg-blue-50 text-blue-700 font-bold text-xs ring-1 ring-blue-100 shrink-0'>
+                        {c.number}
+                      </span>
+                      <h3 className='font-bold text-slate-900 truncate'>
+                        {c.firstName} {c.lastName}
+                      </h3>
+                    </div>
+                    {c.candidatePolicy && (
+                      <p className='text-xs text-muted-foreground line-clamp-2 mb-2'>
+                        {c.candidatePolicy}
+                      </p>
+                    )}
+                    <div className='flex flex-col gap-1.5 text-xs text-slate-600'>
+                      <div className='flex items-center gap-1.5'>
+                        <Filter className='w-3.5 h-3.5 text-slate-400 shrink-0' />
+                        <span className='truncate'>{c.party?.name || '-'}</span>
+                      </div>
+                      <div className='flex items-center gap-1.5'>
+                        <Users className='w-3.5 h-3.5 text-slate-400 shrink-0' />
+                        <span className='truncate'>
+                          {c.constituency
+                            ? `${c.constituency.province?.name || '-'} เขต ${c.constituency.number}`
+                            : '-'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className='flex justify-end gap-2 pt-3 border-t border-slate-50'>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+                    onClick={() => handleEdit(c)}
+                  >
+                    <Edit className='h-3 w-3 mr-1.5' /> แก้ไข
+                  </Button>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200'
+                    onClick={() => handleDelete(c)}
+                  >
+                    <Trash className='h-3 w-3 mr-1.5' /> ลบ
+                  </Button>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
+      </div>
       {/* Pagination */}
-      <PaginationBar
-        currentPage={currentPage}
-        totalPages={meta.totalPages}
-        totalItems={meta.total}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-        onItemsPerPageChange={handleItemsPerPageChange}
-      />
+      <div className='pb-20'>
+        <PaginationBar
+          currentPage={currentPage}
+          totalPages={meta.totalPages}
+          totalItems={meta.total}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={handleItemsPerPageChange}
+        />
+      </div>
 
       <ImagePreviewDialog
         url={previewUrl}

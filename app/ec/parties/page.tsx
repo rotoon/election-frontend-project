@@ -1,5 +1,6 @@
 'use client'
 
+import { ImagePreviewDialog } from '@/components/shared/image-preview-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -11,6 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import { ImageUpload } from '@/components/ui/image-upload'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -22,8 +24,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Textarea } from '@/components/ui/textarea'
-import { ImageUpload } from '@/components/ui/image-upload'
-import { ImagePreviewDialog } from '@/components/shared/image-preview-dialog'
 import {
   useCreatePartyMutation,
   useDeletePartyMutation,
@@ -143,10 +143,7 @@ export default function ManagePartiesPage() {
             <div className='grid gap-6 py-6'>
               <div className='space-y-4'>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='name'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='name' className='text-sm font-semibold'>
                     ชื่อพรรค
                   </Label>
                   <Input
@@ -170,10 +167,7 @@ export default function ManagePartiesPage() {
               </div>
 
               <div className='space-y-2'>
-                <Label
-                  htmlFor='policy'
-                  className='text-sm font-semibold'
-                >
+                <Label htmlFor='policy' className='text-sm font-semibold'>
                   นโยบายของพรรค
                 </Label>
                 <Textarea
@@ -209,7 +203,7 @@ export default function ManagePartiesPage() {
         </Dialog>
       </div>
 
-      <Card className='border-none shadow-xl bg-white/50 backdrop-blur-sm overflow-hidden'>
+      <Card className='border-none shadow-xl bg-white/50 backdrop-blur-sm overflow-hidden hidden md:block'>
         <CardContent className='p-0'>
           <div className='overflow-x-auto'>
             <Table>
@@ -233,10 +227,7 @@ export default function ManagePartiesPage() {
                 <AnimatePresence mode='wait'>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={4}
-                        className='h-40 text-center'
-                      >
+                      <TableCell colSpan={4} className='h-40 text-center'>
                         <div className='flex flex-col items-center justify-center space-y-3'>
                           <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
                           <p className='text-slate-500 font-medium'>
@@ -247,10 +238,7 @@ export default function ManagePartiesPage() {
                     </TableRow>
                   ) : !parties || parties.length === 0 ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={4}
-                        className='h-60 text-center'
-                      >
+                      <TableCell colSpan={4} className='h-60 text-center'>
                         <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
                           <div className='p-4 bg-slate-50 rounded-full'>
                             <LayoutGrid className='w-12 h-12 text-slate-200' />
@@ -338,6 +326,90 @@ export default function ManagePartiesPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Mobile Card Layout */}
+      <div className='grid gap-4 md:hidden pt-4 pb-20'>
+        <AnimatePresence mode='wait'>
+          {isLoading ? (
+            <div className='flex flex-col items-center justify-center space-y-3 py-10 bg-white/50 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm'>
+              <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
+              <p className='text-slate-500 font-medium'>กำลังโหลดข้อมูล...</p>
+            </div>
+          ) : !parties || parties.length === 0 ? (
+            <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic py-12 bg-white/50 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm'>
+              <div className='p-4 bg-slate-50 rounded-full'>
+                <LayoutGrid className='w-12 h-12 text-slate-200' />
+              </div>
+              <div className='text-center'>
+                <p className='text-lg font-semibold text-slate-500'>
+                  ไม่พบข้อมูลพรรคการเมือง
+                </p>
+                <p className='text-sm mt-1'>
+                  เริ่มต้นด้วยการเพิ่มพรรคการเมืองใหม่ที่ปุ่มด้านบน
+                </p>
+              </div>
+            </div>
+          ) : (
+            parties.map((p: Party, index: number) => (
+              <motion.div
+                key={p.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.05 }}
+                className='bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4'
+              >
+                <div className='flex items-start gap-4'>
+                  <div className='shrink-0'>
+                    {p.logo_url ? (
+                      <img
+                        src={p.logo_url}
+                        alt={p.name}
+                        className='w-20 h-20 object-cover rounded-lg p-1 bg-white shadow-sm ring-1 ring-slate-100'
+                      />
+                    ) : (
+                      <div className='w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400'>
+                        <ImageIcon className='w-8 h-8' />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className='flex-1 min-w-0 pt-0.5'>
+                    <h3 className='font-bold text-slate-900 truncate mb-1'>
+                      {p.name}
+                    </h3>
+                    <div className='text-sm text-slate-600 line-clamp-4 leading-relaxed bg-slate-50 p-2 rounded-lg'>
+                      {p.policy || (
+                        <span className='italic opacity-50 font-light'>
+                          ยังไม่ได้ระบุนโยบาย
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className='flex flex-col justify-center gap-2 pt-3 border-t border-slate-50'>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 w-full sm:w-auto'
+                    onClick={() => handleEdit(p)}
+                  >
+                    <Edit className='h-4 w-4 mr-1.5' /> แก้ไข
+                  </Button>
+                  <Button
+                    variant='outline'
+                    size='sm'
+                    className='rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200 w-full sm:w-auto'
+                    onClick={() => handleDelete(p.id)}
+                  >
+                    <Trash className='h-4 w-4 mr-1.5' /> ลบ
+                  </Button>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
+      </div>
 
       <ImagePreviewDialog
         url={previewUrl}

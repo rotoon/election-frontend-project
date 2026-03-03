@@ -34,29 +34,29 @@ const PaginationBarComponent = memo(function PaginationBar({
 }: PaginationBarProps) {
   const handleItemsPerPageChange = useCallback(
     (val: string) => onItemsPerPageChange(parseInt(val)),
-    [onItemsPerPageChange]
+    [onItemsPerPageChange],
   )
 
   const goToFirstPage = useCallback(() => onPageChange(1), [onPageChange])
   const goToPrevPage = useCallback(
     () => onPageChange(Math.max(1, currentPage - 1)),
-    [onPageChange, currentPage]
+    [onPageChange, currentPage],
   )
   const goToNextPage = useCallback(
     () => onPageChange(Math.min(totalPages, currentPage + 1)),
-    [onPageChange, totalPages, currentPage]
+    [onPageChange, totalPages, currentPage],
   )
   const goToLastPage = useCallback(
     () => onPageChange(totalPages),
-    [onPageChange, totalPages]
+    [onPageChange, totalPages],
   )
   const handlePageClick = useCallback(
     (page: number) => onPageChange(page),
-    [onPageChange]
+    [onPageChange],
   )
 
   return (
-    <div className='flex items-center justify-between bg-white p-4 rounded-lg border'>
+    <div className='flex flex-col sm:flex-row items-center justify-between bg-white p-4 rounded-lg border gap-4'>
       <div className='flex items-center space-x-2'>
         <Select
           value={itemsPerPage.toString()}
@@ -67,16 +67,13 @@ const PaginationBarComponent = memo(function PaginationBar({
           </SelectTrigger>
           <SelectContent>
             {pageSizeOptions.map((size) => (
-              <SelectItem
-                key={size}
-                value={size.toString()}
-              >
+              <SelectItem key={size} value={size.toString()}>
                 {size} รายการ
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        <div className='text-sm text-muted-foreground'>
+        <div className='text-sm text-muted-foreground hidden sm:block w-full text-center sm:text-left sm:w-auto'>
           แสดง {totalItems > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} -{' '}
           {Math.min(currentPage * itemsPerPage, totalItems)} จาก {totalItems}{' '}
           รายการ
@@ -84,7 +81,7 @@ const PaginationBarComponent = memo(function PaginationBar({
       </div>
 
       {totalPages > 1 && (
-        <div className='flex items-center space-x-1'>
+        <div className='flex flex-wrap items-center justify-center gap-1 sm:space-x-1 sm:gap-0 w-full sm:w-auto'>
           <Button
             variant='outline'
             size='sm'
@@ -147,10 +144,7 @@ const PaginationBarComponent = memo(function PaginationBar({
                   {page}
                 </Button>
               ) : (
-                <span
-                  key={idx}
-                  className='px-2 text-muted-foreground'
-                >
+                <span key={idx} className='px-2 text-muted-foreground'>
                   ...
                 </span>
               ),

@@ -2,8 +2,6 @@
 
 import { Button } from '@/components/ui/button'
 import { CandidateCard } from '@/components/vote/candidate-card'
-import { PollStatusBadge } from '@/components/vote/poll-status-badge'
-import { Skeleton } from '@/components/ui/skeleton'
 import { VoteConfirmationDialog } from '@/components/vote/vote-confirmation-dialog'
 import { VoteHeader } from '@/components/vote/vote-header'
 import { VoteSkeletonList } from '@/components/vote/vote-skeleton'
@@ -13,7 +11,7 @@ import { useMyVote, useVoteMutation } from '@/hooks/use-vote'
 import { useAuthStore } from '@/store/useAuthStore'
 import { CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useRef, useState, startTransition } from 'react'
+import { startTransition, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
 export default function VotePage() {
@@ -113,12 +111,7 @@ export default function VotePage() {
     <div className='space-y-6 md:space-y-8 pb-20 md:pb-0'>
       {/* Header */}
       {/* Header - Enriched District Info */}
-      {isAuthenticated && (
-        <VoteHeader
-          user={user}
-          pollOpen={pollOpen}
-        />
-      )}
+      {isAuthenticated && <VoteHeader user={user} pollOpen={pollOpen} />}
 
       {/* Vote confirmation info */}
       {currentVote && votedCandidate && (
@@ -167,7 +160,7 @@ export default function VotePage() {
       <div className='hidden md:flex justify-end pb-10'>
         <Button
           size='lg'
-          className='text-lg px-12 py-6 shadow-xl h-16 rounded-2xl font-bold transition-all hover:scale-105 active:scale-95'
+          className='text-lg px-12 py-6 shadow-xl h-16 rounded-2xl font-bold transition-[transform,box-shadow] hover:scale-105 active:scale-95'
           onClick={handleVote}
           disabled={!canSubmit}
         >

@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { usePartyStats } from '@/hooks/use-parties'
-import type { PartyStats } from '@/types'
+import type { PartyStats } from '@/types/party'
 import { Info, Users } from 'lucide-react'
 import { useState } from 'react'
 

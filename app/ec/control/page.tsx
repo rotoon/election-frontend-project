@@ -24,9 +24,9 @@ import {
   useTogglePollMutation,
 } from '@/hooks/use-constituencies'
 import { useProvinces } from '@/hooks/use-location'
+import { useURLPagination } from '@/hooks/use-url-pagination'
 import { Lock, RefreshCw, Unlock } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense } from 'react'
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ElectionControlPage() {
@@ -52,10 +52,7 @@ function ControlPageSkeleton() {
       </div>
       <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className='h-12 bg-slate-100 rounded animate-pulse'
-          />
+          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
         ))}
       </div>
     </div>
@@ -63,42 +60,17 @@ function ControlPageSkeleton() {
 }
 
 function ControlPageContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const { state, actions } = useURLPagination({
+    filterKeys: ['provinceId'],
+  })
 
-  // Read from URL params or use defaults
-  const [filterProvinceId, setFilterProvinceId] = useState<string>(
-    searchParams.get('provinceId') || 'all',
-  )
-  const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get('page') || '1'),
-  )
-  const [itemsPerPage, setItemsPerPage] = useState(
-    parseInt(searchParams.get('limit') || '10'),
-  )
-
-  // Update URL when params change
-  const updateURL = useCallback(() => {
-    const params = new URLSearchParams()
-    if (filterProvinceId !== 'all') params.set('provinceId', filterProvinceId)
-    if (currentPage !== 1) params.set('page', currentPage.toString())
-    if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
-
-    const queryString = params.toString()
-    router.push(queryString ? `?${queryString}` : '/ec/control', {
-      scroll: false,
-    })
-  }, [filterProvinceId, currentPage, itemsPerPage, router])
-
-  useEffect(() => {
-    updateURL()
-  }, [updateURL])
+  const filterProvinceId = state.filters.provinceId || 'all'
 
   // Hooks - server side pagination
   const { data, isLoading, refetch } = useManageConstituencies({
     provinceId: filterProvinceId === 'all' ? null : filterProvinceId,
-    page: currentPage,
-    limit: itemsPerPage,
+    page: state.page,
+    limit: state.limit,
   })
 
   // Get all provinces for filter dropdown
@@ -112,19 +84,13 @@ function ControlPageContent() {
   const meta = data?.meta || {
     total: 0,
     page: 1,
-    limit: itemsPerPage,
+    limit: state.limit,
     totalPages: 1,
   }
 
   // Handlers
   const handleFilterProvinceChange = (value: string) => {
-    setFilterProvinceId(value)
-    setCurrentPage(1)
-  }
-
-  const handleItemsPerPageChange = (limit: number) => {
-    setItemsPerPage(limit)
-    setCurrentPage(1)
+    actions.setFilter('provinceId', value)
   }
 
   async function togglePoll(id: number, currentStatus: boolean) {
@@ -185,10 +151,7 @@ function ControlPageContent() {
             <SelectContent>
               <SelectItem value='all'>ทั้งหมด</SelectItem>
               {provinces?.map((p: { id: number; name: string }) => (
-                <SelectItem
-                  key={p.id}
-                  value={p.id.toString()}
-                >
+                <SelectItem key={p.id} value={p.id.toString()}>
                   {p.name}
                 </SelectItem>
               ))}
@@ -348,12 +311,12 @@ function ControlPageContent() {
       {/* Pagination */}
       <div className='pb-20'>
         <PaginationBar
-          currentPage={currentPage}
+          currentPage={state.page}
           totalPages={meta.totalPages}
           totalItems={meta.total}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
+          itemsPerPage={state.limit}
+          onPageChange={actions.setPage}
+          onItemsPerPageChange={actions.setLimit}
         />
       </div>
     </div>

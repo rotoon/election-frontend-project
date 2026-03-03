@@ -1,14 +1,14 @@
-import type { Metadata, Viewport } from 'next'
-import { Kanit } from 'next/font/google'
 import Providers from '@/components/providers'
 import { Toaster } from '@/components/ui/sonner'
+import type { Metadata, Viewport } from 'next'
+import { Kanit } from 'next/font/google'
 
 import './globals.css'
 
 const kanit = Kanit({
   variable: '--font-kanit',
   subsets: ['latin', 'thai'],
-  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
+  weight: ['300', '400', '500', '600', '700'],
   display: 'swap',
 })
 
@@ -57,10 +57,7 @@ export default function RootLayout({
     >
       <head>
         {/* Preconnect to external resources for performance */}
-        <link
-          rel='preconnect'
-          href='https://fonts.googleapis.com'
-        />
+        <link rel='preconnect' href='https://fonts.googleapis.com' />
         <link
           rel='preconnect'
           href='https://fonts.gstatic.com'
@@ -73,10 +70,7 @@ export default function RootLayout({
       >
         <Providers>
           {children}
-          <Toaster
-            position='top-center'
-            visibleToasts={1}
-          />
+          <Toaster position='top-center' visibleToasts={1} />
         </Providers>
       </body>
     </html>

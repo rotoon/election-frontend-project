@@ -46,9 +46,27 @@ export default function ResultsPage() {
 
   // Mock data for leaderboard
   const topParties = [
-    { rank: 1, name: 'พลังประชาชน', leader: 'อนุทิน ชาญวิริ', seats: 193, color: '#1e3a8a' },
-    { rank: 2, name: 'ประชาชน', leader: 'ณัฐพล ร่วมประเสริ', seats: 118, color: '#f97316' },
-    { rank: 3, name: 'เพื่อไทย', leader: 'เศรษฐา ทวีสิน', seats: 74, color: '#dc2626' },
+    {
+      rank: 1,
+      name: 'พลังประชาชน',
+      leader: 'อนุทิน ชาญวิริ',
+      seats: 193,
+      color: '#1e3a8a',
+    },
+    {
+      rank: 2,
+      name: 'ประชาชน',
+      leader: 'ณัฐพล ร่วมประเสริ',
+      seats: 118,
+      color: '#f97316',
+    },
+    {
+      rank: 3,
+      name: 'เพื่อไทย',
+      leader: 'เศรษฐา ทวีสิน',
+      seats: 74,
+      color: '#dc2626',
+    },
   ]
 
   // Calculate total seats
@@ -66,7 +84,8 @@ export default function ResultsPage() {
     <div className='space-y-6'>
       {/* Status Bar */}
       <div className='bg-gray-800 text-white text-center py-2'>
-        <span className='text-yellow-400 font-bold'>●</span> อัปเดตล่าสุด 23 ก.พ. 2569 | นับคะแนนแล้ว 94%
+        <span className='text-yellow-400 font-bold'>●</span> อัปเดตล่าสุด 23
+        ก.พ. 2569 | นับคะแนนแล้ว 94%
       </div>
 
       {/* Hero Leaderboard */}
@@ -87,11 +106,17 @@ export default function ResultsPage() {
               <div className='w-32 h-32 mx-auto mb-4 bg-gray-200 rounded-full flex items-center justify-center'>
                 <User className='w-16 h-16 text-gray-400' />
               </div>
-              <h3 className='text-2xl font-bold mb-1' style={{ color: party.color }}>
+              <h3
+                className='text-2xl font-bold mb-1'
+                style={{ color: party.color }}
+              >
                 {party.name}
               </h3>
               <p className='text-gray-500 mb-4'>{party.leader}</p>
-              <div className='text-5xl font-bold' style={{ color: party.color }}>
+              <div
+                className='text-5xl font-bold'
+                style={{ color: party.color }}
+              >
                 {party.seats}
               </div>
               <p className='text-gray-500'>ที่นั่ง ส.ส.</p>
@@ -160,7 +185,9 @@ export default function ResultsPage() {
                   <span className='font-medium' style={{ color: party.color }}>
                     {party.name}
                   </span>
-                  <span className='font-bold'>{party.votes.toLocaleString()}</span>
+                  <span className='font-bold'>
+                    {party.votes.toLocaleString()}
+                  </span>
                 </div>
                 <div className='h-4 bg-gray-100 rounded-full overflow-hidden'>
                   <div
@@ -182,8 +209,13 @@ export default function ResultsPage() {
           <Card>
             <CardContent className='p-4'>
               <div className='flex flex-col space-y-2'>
-                <label className='text-sm font-medium'>เลือกเขตเลือกตั้ง:</label>
-                <Select value={selectedConstId} onValueChange={setSelectedConstId}>
+                <label className='text-sm font-medium'>
+                  เลือกเขตเลือกตั้ง:
+                </label>
+                <Select
+                  value={selectedConstId}
+                  onValueChange={setSelectedConstId}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder='เลือกเขตเลือกตั้ง' />
                   </SelectTrigger>
@@ -228,7 +260,7 @@ export default function ResultsPage() {
               {results.map((item) => (
                 <Card
                   key={item.candidate.id}
-                  className={`overflow-hidden transition-all ${
+                  className={`overflow-hidden transition-[max-height,opacity] ${
                     item.rank === 1 && !pollOpen
                       ? 'border-2 border-yellow-400 shadow-xl ring-4 ring-yellow-100'
                       : ''

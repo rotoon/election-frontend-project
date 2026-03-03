@@ -1,7 +1,7 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
 import { PaginationBar } from '@/components/shared/pagination-bar'
+import { Input } from '@/components/ui/input'
 import {
   Select,
   SelectContent,
@@ -17,13 +17,14 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useDebounce } from '@/hooks/use-debounce'
+import { useURLPagination } from '@/hooks/use-url-pagination'
 import { useManageUsers, useUpdateUserRoleMutation } from '@/hooks/use-users'
 import { formatCitizenId } from '@/lib/utils'
 import { User } from '@/types/user'
 import { format } from 'date-fns'
 import { th } from 'date-fns/locale'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { Suspense, useState } from 'react'
 
 function getPrimaryRole(roles: string[]): string {
   if (roles.includes('ROLE_ADMIN')) return 'ROLE_ADMIN'
@@ -31,78 +32,18 @@ function getPrimaryRole(roles: string[]): string {
   return 'ROLE_VOTER'
 }
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState<T>(value)
-
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value)
-    }, delay)
-    return () => clearTimeout(handler)
-  }, [value, delay])
-
-  return debouncedValue
-}
-
-function UsersPageSkeleton() {
-  return (
-    <div className='space-y-6'>
-      <div className='flex justify-between items-center'>
-        <div className='h-9 w-40 bg-slate-200 rounded animate-pulse' />
-        <div className='h-5 w-24 bg-slate-200 rounded animate-pulse' />
-      </div>
-      <div className='bg-white p-4 rounded-lg border'>
-        <div className='h-10 w-full bg-slate-100 rounded animate-pulse' />
-      </div>
-      <div className='border rounded-md p-4 space-y-2'>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className='h-12 bg-slate-100 rounded animate-pulse'
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function UsersPageContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const { state, actions } = useURLPagination({
+    filterKeys: ['search'],
+  })
 
-  const [filterRole, setFilterRole] = useState<string>(
-    searchParams.get('search') || '',
-  )
-  const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get('page') || '1'),
-  )
-  const [itemsPerPage, setItemsPerPage] = useState(
-    parseInt(searchParams.get('limit') || '10'),
-  )
-
-  const updateURL = useCallback(() => {
-    const params = new URLSearchParams()
-    if (filterRole) params.set('search', filterRole)
-    if (currentPage !== 1) params.set('page', currentPage.toString())
-    if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
-
-    const queryString = params.toString()
-    router.push(queryString ? `?${queryString}` : '/admin/users', {
-      scroll: false,
-    })
-  }, [filterRole, currentPage, itemsPerPage, router])
-
-  useEffect(() => {
-    updateURL()
-  }, [updateURL])
-
-  // Debounce search
-  const debouncedSearch = useDebounce(filterRole, 500)
+  const [searchInput, setSearchInput] = useState(state.filters.search || '')
+  const debouncedSearch = useDebounce(searchInput, 500)
 
   const { data, isLoading } = useManageUsers({
     role: debouncedSearch,
-    page: currentPage,
-    limit: itemsPerPage,
+    page: state.page,
+    limit: state.limit,
   })
 
   const updateRoleMutation = useUpdateUserRoleMutation()
@@ -111,18 +52,13 @@ function UsersPageContent() {
   const meta = data?.meta || {
     total: 0,
     page: 1,
-    limit: itemsPerPage,
+    limit: state.limit,
     totalPages: 1,
   }
 
-  const handleFilterRoleChange = (value: string) => {
-    setFilterRole(value)
-    setCurrentPage(1)
-  }
-
-  const handleItemsPerPageChange = (limit: number) => {
-    setItemsPerPage(limit)
-    setCurrentPage(1)
+  function handleSearchChange(value: string) {
+    setSearchInput(value)
+    actions.setFilter('search', value)
   }
 
   function handleRoleChange(userId: number, newRole: string) {
@@ -141,14 +77,13 @@ function UsersPageContent() {
       </div>
 
       <div className='flex flex-wrap items-center gap-4 bg-white p-4 rounded-lg border'>
-        {/* Search */}
         <div className='flex items-center space-x-2'>
           <span className='text-sm font-medium'>ค้นหา:</span>
           <Input
             type='text'
             placeholder='ชื่อ, นามสกุล, เลขบัตร...'
-            value={filterRole}
-            onChange={(e) => handleFilterRoleChange(e.target.value)}
+            value={searchInput}
+            onChange={(e) => handleSearchChange(e.target.value)}
             className='w-[250px]'
           />
         </div>
@@ -170,7 +105,7 @@ function UsersPageContent() {
             {isLoading ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className='text-center h-24 text-muted-foreground'
                 >
                   กำลังโหลด...
@@ -179,7 +114,7 @@ function UsersPageContent() {
             ) : users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={5}
+                  colSpan={6}
                   className='text-center h-24 text-muted-foreground'
                 >
                   ไม่พบผู้ใช้งาน
@@ -189,7 +124,7 @@ function UsersPageContent() {
               users.map((u: User, index) => (
                 <TableRow key={u.id}>
                   <TableCell className='text-center'>
-                    {index + 1 + Number(currentPage - 1) * Number(itemsPerPage)}
+                    {index + 1 + Number(state.page - 1) * Number(state.limit)}
                   </TableCell>
                   <TableCell className='font-medium'>
                     {u.firstName} {u.lastName}
@@ -230,12 +165,12 @@ function UsersPageContent() {
       </div>
 
       <PaginationBar
-        currentPage={currentPage}
+        currentPage={state.page}
         totalPages={meta.totalPages}
         totalItems={meta.total}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-        onItemsPerPageChange={handleItemsPerPageChange}
+        itemsPerPage={state.limit}
+        onPageChange={actions.setPage}
+        onItemsPerPageChange={actions.setLimit}
       />
     </div>
   )
@@ -243,7 +178,7 @@ function UsersPageContent() {
 
 export default function ManageUsersPage() {
   return (
-    <Suspense fallback={<UsersPageSkeleton />}>
+    <Suspense fallback={null}>
       <UsersPageContent />
     </Suspense>
   )

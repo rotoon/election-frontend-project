@@ -11,8 +11,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Select,
   SelectContent,
@@ -34,82 +41,43 @@ import {
   useDeleteConstituencyMutation,
 } from '@/hooks/use-constituencies'
 import { useProvinces } from '@/hooks/use-location'
+import { useURLPagination } from '@/hooks/use-url-pagination'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Plus, Trash } from 'lucide-react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useState } from 'react'
-import { toast } from 'sonner'
+import { Suspense, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-// Wrapper component with Suspense boundary for useSearchParams
+// --- Zod Schema ---
+const constituencySchema = z.object({
+  provinceId: z.string().min(1, 'กรุณาเลือกจังหวัด'),
+  zoneNumber: z.number().min(1, 'กรุณาระบุหมายเลขเขต'),
+})
+
+type ConstituencyFormValues = z.infer<typeof constituencySchema>
+
+// --- Main Export ---
 export default function ManageConstituenciesPage() {
   return (
-    <Suspense fallback={<ConstituenciesPageSkeleton />}>
+    <Suspense fallback={null}>
       <ConstituenciesPageContent />
     </Suspense>
   )
 }
 
-function ConstituenciesPageSkeleton() {
-  return (
-    <div className='space-y-6'>
-      <div className='flex justify-between items-center'>
-        <div className='h-9 w-48 bg-slate-200 rounded animate-pulse' />
-        <div className='h-10 w-40 bg-slate-200 rounded animate-pulse' />
-      </div>
-      <div className='bg-white p-4 rounded-lg border'>
-        <div className='h-10 w-full bg-slate-100 rounded animate-pulse' />
-      </div>
-      <div className='border rounded-md p-4 space-y-2'>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className='h-12 bg-slate-100 rounded animate-pulse'
-          />
-        ))}
-      </div>
-    </div>
-  )
-}
-
 function ConstituenciesPageContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-
-  // Read from URL params or use defaults
-  const [filterProvinceId, setFilterProvinceId] = useState<string>(
-    searchParams.get('provinceId') || 'all',
-  )
-  const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get('page') || '1'),
-  )
-  const [itemsPerPage, setItemsPerPage] = useState(
-    parseInt(searchParams.get('limit') || '10'),
-  )
-
-  // Update URL when params change
-  const updateURL = useCallback(() => {
-    const params = new URLSearchParams()
-    if (filterProvinceId !== 'all') params.set('provinceId', filterProvinceId)
-    if (currentPage !== 1) params.set('page', currentPage.toString())
-    if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
-
-    const queryString = params.toString()
-    router.push(queryString ? `?${queryString}` : '/admin/constituencies', {
-      scroll: false,
-    })
-  }, [filterProvinceId, currentPage, itemsPerPage, router])
-
-  useEffect(() => {
-    updateURL()
-  }, [updateURL])
-
-  // Hooks - server side pagination
-  const { data, isLoading, refetch } = useAdminConstituencies({
-    provinceId: filterProvinceId === 'all' ? null : filterProvinceId,
-    page: currentPage,
-    limit: itemsPerPage,
+  const { state, actions } = useURLPagination({
+    filterKeys: ['provinceId'],
   })
 
-  // List of all provinces from API for the dropdown
+  const provinceId = state.filters.provinceId || 'all'
+
+  // Data hooks
+  const { data, isLoading, refetch } = useAdminConstituencies({
+    provinceId: provinceId === 'all' ? null : provinceId,
+    page: state.page,
+    limit: state.limit,
+  })
   const { data: provinces } = useProvinces()
 
   const createConstituency = useCreateConstituencyMutation()
@@ -119,42 +87,30 @@ function ConstituenciesPageContent() {
   const meta = data?.meta || {
     total: 0,
     page: 1,
-    limit: itemsPerPage,
+    limit: state.limit,
     totalPages: 1,
   }
 
+  // Dialog state
   const [isOpen, setIsOpen] = useState(false)
-  const [formProvinceId, setFormProvinceId] = useState<string>('')
-  const [zone, setZone] = useState('')
 
-  // Handlers
-  const handleFilterProvinceChange = (value: string) => {
-    setFilterProvinceId(value)
-    setCurrentPage(1)
-  }
+  // React Hook Form
+  const form = useForm<ConstituencyFormValues>({
+    resolver: zodResolver(constituencySchema),
+    defaultValues: { provinceId: '', zoneNumber: 0 },
+  })
 
-  const handleItemsPerPageChange = (limit: number) => {
-    setItemsPerPage(limit)
-    setCurrentPage(1)
-  }
-
-  async function handleCreate() {
-    if (!formProvinceId || !zone) {
-      toast.error('กรุณากรอกข้อมูลให้ครบ')
-      return
-    }
-
+  async function onSubmit(values: ConstituencyFormValues) {
     try {
       await createConstituency.mutateAsync({
-        province: formProvinceId,
-        zoneNumber: parseInt(zone),
+        province: values.provinceId,
+        zoneNumber: values.zoneNumber,
       })
       setIsOpen(false)
-      setFormProvinceId('')
-      setZone('')
+      form.reset()
       refetch()
     } catch {
-      // Error handled in hook already
+      // Error handled in hook
     }
   }
 
@@ -176,7 +132,10 @@ function ConstituenciesPageContent() {
         </h2>
         <Dialog
           open={isOpen}
-          onOpenChange={setIsOpen}
+          onOpenChange={(open) => {
+            setIsOpen(open)
+            if (!open) form.reset()
+          }}
         >
           <DialogTrigger asChild>
             <Button>
@@ -188,57 +147,65 @@ function ConstituenciesPageContent() {
               <DialogTitle>เพิ่มเขตเลือกตั้งใหม่</DialogTitle>
               <DialogDescription>ระบุจังหวัดและหมายเลขเขต</DialogDescription>
             </DialogHeader>
-            <div className='grid gap-4 py-4'>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label
-                  htmlFor='province'
-                  className='text-right'
-                >
-                  จังหวัด
-                </Label>
-                <Select
-                  value={formProvinceId}
-                  onValueChange={setFormProvinceId}
-                >
-                  <SelectTrigger className='col-span-3 w-full'>
-                    <SelectValue placeholder='เลือกจังหวัด' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {provinces?.map((p) => (
-                      <SelectItem
-                        key={p.id}
-                        value={p.id.toString()}
-                      >
-                        {p.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className='grid grid-cols-4 items-center gap-4'>
-                <Label
-                  htmlFor='zone'
-                  className='text-right'
-                >
-                  เขตที่
-                </Label>
-                <Input
-                  id='zone'
-                  type='number'
-                  value={zone}
-                  onChange={(e) => setZone(e.target.value)}
-                  className='col-span-3'
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                onClick={handleCreate}
-                disabled={createConstituency.isPending}
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className='space-y-4'
               >
-                {createConstituency.isPending ? 'กำลังบันทึก...' : 'บันทึก'}
-              </Button>
-            </DialogFooter>
+                <FormField
+                  control={form.control}
+                  name='provinceId'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>จังหวัด</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger className='w-full'>
+                            <SelectValue placeholder='เลือกจังหวัด' />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {provinces?.map((p) => (
+                            <SelectItem key={p.id} value={p.id.toString()}>
+                              {p.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name='zoneNumber'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>เขตที่</FormLabel>
+                      <FormControl>
+                        <Input
+                          type='number'
+                          placeholder='1'
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(parseInt(e.target.value) || 0)
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <DialogFooter>
+                  <Button type='submit' disabled={createConstituency.isPending}>
+                    {createConstituency.isPending ? 'กำลังบันทึก...' : 'บันทึก'}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -247,8 +214,8 @@ function ConstituenciesPageContent() {
         <div className='flex items-center space-x-2'>
           <span className='text-sm font-medium'>จังหวัด:</span>
           <Select
-            value={filterProvinceId}
-            onValueChange={handleFilterProvinceChange}
+            value={provinceId}
+            onValueChange={(v) => actions.setFilter('provinceId', v)}
           >
             <SelectTrigger className='w-[200px]'>
               <SelectValue placeholder='ทั้งหมด' />
@@ -256,10 +223,7 @@ function ConstituenciesPageContent() {
             <SelectContent>
               <SelectItem value='all'>ทั้งหมด</SelectItem>
               {provinces?.map((p) => (
-                <SelectItem
-                  key={p.id}
-                  value={p.id.toString()}
-                >
+                <SelectItem key={p.id} value={p.id.toString()}>
                   {p.name}
                 </SelectItem>
               ))}
@@ -308,10 +272,7 @@ function ConstituenciesPageContent() {
               </TableRow>
             ) : (
               constituencies.map((c) => (
-                <TableRow
-                  key={c.id}
-                  className='hover:bg-slate-50'
-                >
+                <TableRow key={c.id} className='hover:bg-slate-50'>
                   <TableCell className='font-mono text-center text-muted-foreground'>
                     {c.id}
                   </TableCell>
@@ -350,14 +311,13 @@ function ConstituenciesPageContent() {
         </Table>
       </div>
 
-      {/* Pagination */}
       <PaginationBar
-        currentPage={currentPage}
+        currentPage={state.page}
         totalPages={meta.totalPages}
         totalItems={meta.total}
-        itemsPerPage={itemsPerPage}
-        onPageChange={setCurrentPage}
-        onItemsPerPageChange={handleItemsPerPageChange}
+        itemsPerPage={state.limit}
+        onPageChange={actions.setPage}
+        onItemsPerPageChange={actions.setLimit}
       />
     </div>
   )

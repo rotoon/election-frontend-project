@@ -1,9 +1,9 @@
 'use client'
 
 import { LeftSidebar } from '@/components/LeftSidebar'
-import { Search, ChevronDown } from 'lucide-react'
-import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { ChevronDown, Search } from 'lucide-react'
+import { useState } from 'react'
 
 export default function DistrictPage() {
   const [selectedDistrict, setSelectedDistrict] = useState<number | null>(null)
@@ -106,7 +106,7 @@ export default function DistrictPage() {
                     selectedDistrict === d.id ? '#c5a059' : d.color,
                 }}
                 className={cn(
-                  'aspect-square flex flex-col items-center justify-center font-black text-3xl text-white transition-all duration-200',
+                  'aspect-square flex flex-col items-center justify-center font-black text-3xl text-white transition-colors duration-200',
                   'hover:scale-[1.05] hover:z-10 focus:outline-none shadow-md',
                   selectedDistrict === d.id &&
                     'scale-[1.1] z-10 shadow-[0_10px_20px_rgba(197,160,89,0.4)] border-4 border-white',
@@ -131,7 +131,7 @@ export default function DistrictPage() {
             <input
               type='text'
               placeholder='ค้นหาด้วยชื่อจังหวัด เขต อำเภอ แขวง...'
-              className='w-full bg-[#121212] border border-white/10 text-white rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-all placeholder:text-white/30'
+              className='w-full bg-[#121212] border border-white/10 text-white rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-colors placeholder:text-white/30'
             />
           </div>
         </div>

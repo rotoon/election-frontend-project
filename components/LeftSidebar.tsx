@@ -1,7 +1,7 @@
+import { cn } from '@/lib/utils'
 import { Vote } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { cn } from '@/lib/utils'
 
 export function LeftSidebar() {
   const pathname = usePathname()
@@ -11,10 +11,7 @@ export function LeftSidebar() {
       {/* Logo / Header */}
       <div className='flex items-center space-x-3'>
         <div className='bg-[#c5a059] text-black p-2 rounded-lg'>
-          <Vote
-            className='w-6 h-6'
-            aria-hidden='true'
-          />
+          <Vote className='w-6 h-6' aria-hidden='true' />
         </div>
         <div className='block'>
           <h1 className='font-black text-xl tracking-tight leading-none'>
@@ -31,7 +28,7 @@ export function LeftSidebar() {
         <Link
           href='/'
           className={cn(
-            'flex justify-center items-center space-x-3 px-4 py-4 rounded-xl font-bold transition-all',
+            'flex justify-center items-center space-x-3 px-4 py-4 rounded-xl font-bold transition-colors',
             pathname === '/'
               ? 'bg-[#c5a059] text-black shadow-lg shadow-[#c5a059]/20'
               : 'bg-[#1e1e1e] text-white/70 hover:text-white hover:bg-white/10 border border-white/5',
@@ -42,7 +39,7 @@ export function LeftSidebar() {
         <Link
           href='/district'
           className={cn(
-            'flex justify-center items-center space-x-3 px-4 py-4 rounded-xl font-bold transition-all',
+            'flex justify-center items-center space-x-3 px-4 py-4 rounded-xl font-bold transition-colors',
             pathname === '/district'
               ? 'bg-[#c5a059] text-black shadow-lg shadow-[#c5a059]/20'
               : 'bg-[#1e1e1e] text-white/70 hover:text-white hover:bg-white/10 border border-white/5',
@@ -60,7 +57,7 @@ export function LeftSidebar() {
               <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75'></span>
               <span className='relative inline-flex rounded-full h-2 w-2 bg-red-500'></span>
             </span>
-            <span className='text-white/60 text-xs'>
+            <span className='text-white/60 text-xs' suppressHydrationWarning>
               อัปเดตล่าสุด: {new Date().toLocaleDateString('th-TH')}
             </span>
           </div>

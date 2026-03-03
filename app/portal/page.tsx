@@ -97,7 +97,7 @@ export default function PortalPage() {
             >
               <Link href={card.href}>
                 <Card
-                  className={`h-full transition-all duration-200 hover:shadow-lg hover:-translate-y-1 cursor-pointer border-2 ${card.color}`}
+                  className={`h-full transition-[transform,box-shadow] duration-200 hover:shadow-lg hover:-translate-y-1 cursor-pointer border-2 ${card.color}`}
                 >
                   <CardHeader className='flex flex-row items-center gap-4'>
                     <div

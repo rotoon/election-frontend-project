@@ -11,10 +11,10 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
-  const { setUser } = useAuthStore()
+  const { logout } = useAuthStore()
 
   const handleLogout = async () => {
-    setUser(null)
+    logout()
     router.push('/auth')
   }
 

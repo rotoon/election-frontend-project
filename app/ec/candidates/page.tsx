@@ -55,8 +55,9 @@ import {
   Users,
 } from 'lucide-react'
 
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useState } from 'react'
+import { useDebounce } from '@/hooks/use-debounce'
+import { useURLPagination } from '@/hooks/use-url-pagination'
+import { Suspense, useState } from 'react'
 import { toast } from 'sonner'
 
 // Wrapper component with Suspense boundary for useSearchParams
@@ -80,10 +81,7 @@ function CandidatesPageSkeleton() {
       </div>
       <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div
-            key={i}
-            className='h-12 bg-slate-100 rounded animate-pulse'
-          />
+          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
         ))}
       </div>
     </div>
@@ -91,76 +89,28 @@ function CandidatesPageSkeleton() {
 }
 
 function CandidatesPageContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+  const { state, actions } = useURLPagination({
+    filterKeys: [
+      'search',
+      'sortBy',
+      'order',
+      'party',
+      'province',
+      'constituency',
+    ],
+  })
 
-  // URL params state
-  const [currentPage, setCurrentPage] = useState(
-    parseInt(searchParams.get('page') || '1'),
-  )
-  const [itemsPerPage, setItemsPerPage] = useState(
-    parseInt(searchParams.get('limit') || '10'),
-  )
-  const [search, setSearch] = useState(searchParams.get('search') || '')
-  const [debouncedSearch, setDebouncedSearch] = useState(search)
-  const [sortBy, setSortBy] = useState<'number' | 'firstName' | 'lastName'>(
-    (searchParams.get('sortBy') as 'number' | 'firstName' | 'lastName') ||
-      'firstName',
-  )
-  const [order, setOrder] = useState<'asc' | 'desc'>(
-    (searchParams.get('order') as 'asc' | 'desc') || 'asc',
-  )
-  const [filterParty, setFilterParty] = useState<string>(
-    searchParams.get('party') || 'all',
-  )
-  const [filterProvince, setFilterProvince] = useState<string>(
-    searchParams.get('province') || 'all',
-  )
-  const [filterConstituency, setFilterConstituency] = useState<string>(
-    searchParams.get('constituency') || 'all',
-  )
+  // Local search state for debounce
+  const [searchInput, setSearchInput] = useState(state.filters.search || '')
+  const debouncedSearch = useDebounce(searchInput, 400)
 
-  // Debounce search
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearch(search)
-      setCurrentPage(1)
-    }, 400)
-    return () => clearTimeout(timer)
-  }, [search])
-
-  // Update URL when params change
-  const updateURL = useCallback(() => {
-    const params = new URLSearchParams()
-    if (currentPage !== 1) params.set('page', currentPage.toString())
-    if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
-    if (debouncedSearch) params.set('search', debouncedSearch)
-    if (sortBy !== 'firstName') params.set('sortBy', sortBy)
-    if (order !== 'asc') params.set('order', order)
-    if (filterParty !== 'all') params.set('party', filterParty)
-    if (filterProvince !== 'all') params.set('province', filterProvince)
-    if (filterConstituency !== 'all')
-      params.set('constituency', filterConstituency)
-
-    const queryString = params.toString()
-    router.push(queryString ? `?${queryString}` : '/ec/candidates', {
-      scroll: false,
-    })
-  }, [
-    currentPage,
-    itemsPerPage,
-    debouncedSearch,
-    sortBy,
-    order,
-    filterParty,
-    filterProvince,
-    filterConstituency,
-    router,
-  ])
-
-  useEffect(() => {
-    updateURL()
-  }, [updateURL])
+  // Derived filter values
+  const sortBy =
+    (state.filters.sortBy as 'number' | 'firstName' | 'lastName') || 'firstName'
+  const order = (state.filters.order as 'asc' | 'desc') || 'asc'
+  const filterParty = state.filters.party || 'all'
+  const filterProvince = state.filters.province || 'all'
+  const filterConstituency = state.filters.constituency || 'all'
 
   // Form state
   const [editId, setEditId] = useState<number | null>(null)
@@ -176,8 +126,8 @@ function CandidatesPageContent() {
 
   // Data hooks
   const { data, isLoading } = useManageCandidates({
-    page: currentPage,
-    limit: itemsPerPage,
+    page: state.page,
+    limit: state.limit,
     search: debouncedSearch || undefined,
     sortBy,
     order,
@@ -194,7 +144,7 @@ function CandidatesPageContent() {
   const meta = data?.meta || {
     total: 0,
     page: 1,
-    limit: itemsPerPage,
+    limit: state.limit,
     totalPages: 1,
   }
 
@@ -322,19 +272,13 @@ function CandidatesPageContent() {
     }
   }
 
-  const handleItemsPerPageChange = (limit: number) => {
-    setItemsPerPage(limit)
-    setCurrentPage(1)
-  }
-
   const toggleSort = (field: 'number' | 'firstName' | 'lastName') => {
     if (sortBy === field) {
-      setOrder(order === 'asc' ? 'desc' : 'asc')
+      actions.setFilter('order', order === 'asc' ? 'desc' : 'asc')
     } else {
-      setSortBy(field)
-      setOrder('asc')
+      actions.setFilter('sortBy', field)
+      actions.setFilter('order', 'asc')
     }
-    setCurrentPage(1)
   }
 
   const isMutating = createMutation.isPending || updateMutation.isPending
@@ -366,7 +310,7 @@ function CandidatesPageContent() {
           }}
         >
           <DialogTrigger asChild>
-            <Button className='shadow-lg hover:shadow-xl transition-all duration-300 gap-2 bg-blue-600 hover:bg-blue-700'>
+            <Button className='shadow-lg hover:shadow-xl transition-[box-shadow,colors] duration-300 gap-2 bg-blue-600 hover:bg-blue-700'>
               <Plus className='h-4 w-4' />
               <span>เพิ่มผู้สมัคร</span>
             </Button>
@@ -383,10 +327,7 @@ function CandidatesPageContent() {
             <div className='grid gap-6 py-6'>
               {/* Row 0: เลขบัตรประชาชน */}
               <div className='space-y-2'>
-                <Label
-                  htmlFor='citizenId'
-                  className='text-sm font-semibold'
-                >
+                <Label htmlFor='citizenId' className='text-sm font-semibold'>
                   เลขบัตรประชาชน 13 หลัก
                 </Label>
                 <Input
@@ -404,10 +345,7 @@ function CandidatesPageContent() {
               {/* Row 1: ชื่อ-นามสกุล */}
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='fname'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='fname' className='text-sm font-semibold'>
                     ชื่อ
                   </Label>
                   <Input
@@ -419,10 +357,7 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='lname'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='lname' className='text-sm font-semibold'>
                     นามสกุล
                   </Label>
                   <Input
@@ -451,10 +386,7 @@ function CandidatesPageContent() {
                     </SelectTrigger>
                     <SelectContent className='max-h-[250px]'>
                       {provinces?.map((pv) => (
-                        <SelectItem
-                          key={pv.id}
-                          value={pv.id.toString()}
-                        >
+                        <SelectItem key={pv.id} value={pv.id.toString()}>
                           {pv.name}
                         </SelectItem>
                       ))}
@@ -462,10 +394,7 @@ function CandidatesPageContent() {
                   </Select>
                 </div>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='c_id'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='c_id' className='text-sm font-semibold'>
                     เขตเลือกตั้ง
                   </Label>
                   <Select
@@ -482,10 +411,7 @@ function CandidatesPageContent() {
                     </SelectTrigger>
                     <SelectContent className='max-h-[200px]'>
                       {formConstituencies?.map((c) => (
-                        <SelectItem
-                          key={c.id}
-                          value={c.id.toString()}
-                        >
+                        <SelectItem key={c.id} value={c.id.toString()}>
                           เขต {c.zone_number}
                         </SelectItem>
                       ))}
@@ -495,10 +421,7 @@ function CandidatesPageContent() {
               </div>
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='number'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='number' className='text-sm font-semibold'>
                     หมายเลขผู้สมัคร
                   </Label>
                   <Input
@@ -512,25 +435,16 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label
-                    htmlFor='party'
-                    className='text-sm font-semibold'
-                  >
+                  <Label htmlFor='party' className='text-sm font-semibold'>
                     พรรคสังกัด
                   </Label>
-                  <Select
-                    value={partyId}
-                    onValueChange={setPartyId}
-                  >
+                  <Select value={partyId} onValueChange={setPartyId}>
                     <SelectTrigger className='bg-slate-50/50 w-full'>
                       <SelectValue placeholder='เลือกพรรค' />
                     </SelectTrigger>
                     <SelectContent>
                       {parties?.map((p) => (
-                        <SelectItem
-                          key={p.id}
-                          value={p.id.toString()}
-                        >
+                        <SelectItem key={p.id} value={p.id.toString()}>
                           {p.name}
                         </SelectItem>
                       ))}
@@ -553,10 +467,7 @@ function CandidatesPageContent() {
 
               {/* Row 4: นโยบาย */}
               <div className='space-y-2'>
-                <Label
-                  htmlFor='policy'
-                  className='text-sm font-semibold'
-                >
+                <Label htmlFor='policy' className='text-sm font-semibold'>
                   นโยบายส่วนตัว{' '}
                   <span className='text-xs text-muted-foreground font-normal'>
                     (ถ้าไม่ระบุ จะใช้นโยบายของพรรค)
@@ -601,8 +512,8 @@ function CandidatesPageContent() {
         <div className='relative flex-1 min-w-[200px]'>
           <Search className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400' />
           <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             placeholder='ค้นหาชื่อ, นามสกุล, จังหวัด, เบอร์...'
             className='pl-10 bg-slate-50/50 focus:bg-white transition-colors'
           />
@@ -613,10 +524,7 @@ function CandidatesPageContent() {
           <Filter className='h-4 w-4 text-slate-400 hidden sm:block' />
           <Select
             value={filterParty}
-            onValueChange={(v) => {
-              setFilterParty(v)
-              setCurrentPage(1)
-            }}
+            onValueChange={(v) => actions.setFilter('party', v)}
           >
             <SelectTrigger className='w-full sm:w-[180px]'>
               <SelectValue placeholder='เลือกพรรค' />
@@ -624,10 +532,7 @@ function CandidatesPageContent() {
             <SelectContent>
               <SelectItem value='all'>ทุกพรรค</SelectItem>
               {parties?.map((p) => (
-                <SelectItem
-                  key={p.id}
-                  value={p.id.toString()}
-                >
+                <SelectItem key={p.id} value={p.id.toString()}>
                   {p.name}
                 </SelectItem>
               ))}
@@ -640,9 +545,8 @@ function CandidatesPageContent() {
           <Select
             value={filterProvince}
             onValueChange={(v) => {
-              setFilterProvince(v)
-              setFilterConstituency('all')
-              setCurrentPage(1)
+              actions.setFilter('province', v)
+              actions.setFilter('constituency', 'all')
             }}
           >
             <SelectTrigger className='w-full sm:w-[180px]'>
@@ -651,10 +555,7 @@ function CandidatesPageContent() {
             <SelectContent className='max-h-[250px]'>
               <SelectItem value='all'>ทุกจังหวัด</SelectItem>
               {provinces?.map((pv) => (
-                <SelectItem
-                  key={pv.id}
-                  value={pv.id.toString()}
-                >
+                <SelectItem key={pv.id} value={pv.id.toString()}>
                   {pv.name}
                 </SelectItem>
               ))}
@@ -667,10 +568,7 @@ function CandidatesPageContent() {
           <div className='flex items-center gap-2 w-full sm:w-auto'>
             <Select
               value={filterConstituency}
-              onValueChange={(v) => {
-                setFilterConstituency(v)
-                setCurrentPage(1)
-              }}
+              onValueChange={(v) => actions.setFilter('constituency', v)}
             >
               <SelectTrigger className='w-full sm:w-[160px]'>
                 <SelectValue placeholder='เลือกเขต' />
@@ -680,10 +578,7 @@ function CandidatesPageContent() {
                 {constituencies
                   ?.filter((c) => c.provinceId.toString() === filterProvince)
                   .map((c) => (
-                    <SelectItem
-                      key={c.id}
-                      value={c.id.toString()}
-                    >
+                    <SelectItem key={c.id} value={c.id.toString()}>
                       เขต {c.zone_number}
                     </SelectItem>
                   ))}
@@ -699,10 +594,7 @@ function CandidatesPageContent() {
           </span>
           <Select
             value={sortBy}
-            onValueChange={(v) => {
-              setSortBy(v as 'number' | 'firstName' | 'lastName')
-              setCurrentPage(1)
-            }}
+            onValueChange={(v) => actions.setFilter('sortBy', v)}
           >
             <SelectTrigger className='w-full sm:w-[140px] flex-1'>
               <SelectValue />
@@ -716,7 +608,9 @@ function CandidatesPageContent() {
           <Button
             variant='outline'
             size='icon'
-            onClick={() => setOrder(order === 'asc' ? 'desc' : 'asc')}
+            onClick={() =>
+              actions.setFilter('order', order === 'asc' ? 'desc' : 'asc')
+            }
             className='shrink-0'
             title={order === 'asc' ? 'น้อย → มาก' : 'มาก → น้อย'}
           >
@@ -772,10 +666,7 @@ function CandidatesPageContent() {
                 <AnimatePresence mode='wait'>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className='h-40 text-center'
-                      >
+                      <TableCell colSpan={6} className='h-40 text-center'>
                         <div className='flex flex-col items-center justify-center space-y-3'>
                           <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
                           <p className='text-slate-500 font-medium'>
@@ -786,10 +677,7 @@ function CandidatesPageContent() {
                     </TableRow>
                   ) : !candidates || candidates.length === 0 ? (
                     <TableRow>
-                      <TableCell
-                        colSpan={6}
-                        className='h-60 text-center'
-                      >
+                      <TableCell colSpan={6} className='h-60 text-center'>
                         <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
                           <div className='p-4 bg-slate-50 rounded-full'>
                             <Users className='w-12 h-12 text-slate-200' />
@@ -871,7 +759,7 @@ function CandidatesPageContent() {
                             <Button
                               variant='outline'
                               size='icon'
-                              className='rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all active:scale-95'
+                              className='rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-[box-shadow,colors] active:scale-95'
                               onClick={() => handleEdit(c)}
                             >
                               <Edit className='h-4 w-4' />
@@ -879,7 +767,7 @@ function CandidatesPageContent() {
                             <Button
                               variant='ghost'
                               size='icon'
-                              className='rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95'
+                              className='rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-[box-shadow,colors] active:scale-95'
                               onClick={() => handleDelete(c)}
                             >
                               <Trash className='h-4 w-4' />
@@ -1009,12 +897,12 @@ function CandidatesPageContent() {
       {/* Pagination */}
       <div className='pb-20'>
         <PaginationBar
-          currentPage={currentPage}
+          currentPage={state.page}
           totalPages={meta.totalPages}
           totalItems={meta.total}
-          itemsPerPage={itemsPerPage}
-          onPageChange={setCurrentPage}
-          onItemsPerPageChange={handleItemsPerPageChange}
+          itemsPerPage={state.limit}
+          onPageChange={actions.setPage}
+          onItemsPerPageChange={actions.setLimit}
         />
       </div>
 

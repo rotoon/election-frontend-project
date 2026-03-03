@@ -3,7 +3,7 @@
  * Centralizes data transformation from API format to frontend format
  */
 
-import type { ApiCandidate, ApiConstituency, ApiParty } from '@/types'
+import type { ApiCandidate, ApiConstituency, ApiParty } from '@/types/api'
 
 // Constituency transformation
 export interface TransformedConstituency {

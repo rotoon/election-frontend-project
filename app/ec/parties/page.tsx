@@ -126,7 +126,7 @@ export default function ManagePartiesPage() {
           }}
         >
           <DialogTrigger asChild>
-            <Button className='shadow-lg hover:shadow-xl transition-all duration-300 gap-2 bg-blue-600 hover:bg-blue-700'>
+            <Button className='shadow-lg hover:shadow-xl transition-[box-shadow,colors] duration-300 gap-2 bg-blue-600 hover:bg-blue-700'>
               <Plus className='h-4 w-4' />
               <span>เพิ่มพรรคการเมือง</span>
             </Button>
@@ -302,7 +302,7 @@ export default function ManagePartiesPage() {
                             <Button
                               variant='outline'
                               size='icon'
-                              className='rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all active:scale-95'
+                              className='rounded-full hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-[box-shadow,colors] active:scale-95'
                               onClick={() => handleEdit(p)}
                             >
                               <Edit className='h-4 w-4' />
@@ -310,7 +310,7 @@ export default function ManagePartiesPage() {
                             <Button
                               variant='ghost'
                               size='icon'
-                              className='rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all active:scale-95'
+                              className='rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-[box-shadow,colors] active:scale-95'
                               onClick={() => handleDelete(p.id)}
                             >
                               <Trash className='h-4 w-4' />

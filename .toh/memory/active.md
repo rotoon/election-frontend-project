@@ -2,21 +2,24 @@
 
 ## Current Focus
 
-- File Upload Integration completed for Candidate and Party forms.
+- EC Module Refactoring completed.
 
 ## Just Completed
 
-- Created `hooks/use-upload.ts` — React Query mutation hook for POST /upload (multipart/form-data).
-- Created `components/ui/image-upload.tsx` — Reusable drag & drop image upload component with preview, loading state, and remove functionality.
-- Replaced manual URL input in `app/ec/candidates/page.tsx` with ImageUpload component (folder: `candidates`).
-- Replaced manual URL input + preview in `app/ec/parties/page.tsx` with ImageUpload component (folder: `parties`).
-- Verified with `pnpm run build` — compiled successfully, all 18 routes generated.
+- Extracted `components/ec/candidate-form-dialog.tsx` — RHF+Zod form (9 fields) from 916-line God Component.
+- Migrated `app/ec/parties/page.tsx` form to react-hook-form + zod.
+- Fixed barrel import `@/types` → `@/types/party`.
+- Created `app/ec/control/loading.tsx`.
+- Updated `app/ec/error.tsx` to Thai.
+- Fixed auth infinite loop bugs (Zustand selector + register form useEffect deps).
+- Verified with `tsc --noEmit` (0 errors) and `npm run build` (14/14 routes).
 
 ## Next Steps
 
-- Manual testing: verify upload flow on `/ec/candidates` and `/ec/parties` pages with live backend.
-- Await further instructions for other features.
+- Consider: `confirm()` → AlertDialog (3 pages)
+- Consider: `<img>` → Next.js `Image` (candidates)
+- Manual testing: verify candidate/party CRUD still works
 
 ---
 
-_Last updated: 2026-03-02_
+_Last updated: 2026-03-03_

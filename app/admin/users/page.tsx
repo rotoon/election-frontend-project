@@ -1,5 +1,6 @@
 'use client'
 
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PaginationBar } from '@/components/shared/pagination-bar'
 import { Input } from '@/components/ui/input'
 import {
@@ -61,9 +62,18 @@ function UsersPageContent() {
     actions.setFilter('search', value)
   }
 
+  const [roleChangeTarget, setRoleChangeTarget] = useState<{
+    userId: number
+    role: string
+  } | null>(null)
+
   function handleRoleChange(userId: number, newRole: string) {
-    if (confirm(`คุณต้องการเปลี่ยนสิทธิ์ผู้ใช้เป็น "${newRole}" ใช่หรือไม่?`)) {
-      updateRoleMutation.mutate({ userId, role: newRole })
+    setRoleChangeTarget({ userId, role: newRole })
+  }
+
+  function confirmRoleChange() {
+    if (roleChangeTarget) {
+      updateRoleMutation.mutate(roleChangeTarget)
     }
   }
 
@@ -171,6 +181,20 @@ function UsersPageContent() {
         itemsPerPage={state.limit}
         onPageChange={actions.setPage}
         onItemsPerPageChange={actions.setLimit}
+      />
+      <ConfirmDialog
+        open={!!roleChangeTarget}
+        onOpenChange={(open) => !open && setRoleChangeTarget(null)}
+        title='ยืนยันเปลี่ยนสิทธิ์'
+        description={
+          roleChangeTarget
+            ? `คุณต้องการเปลี่ยนสิทธิ์ผู้ใช้เป็น "${roleChangeTarget.role}" ใช่หรือไม่?`
+            : ''
+        }
+        confirmLabel='ยืนยัน'
+        variant='default'
+        onConfirm={confirmRoleChange}
+        isPending={updateRoleMutation.isPending}
       />
     </div>
   )

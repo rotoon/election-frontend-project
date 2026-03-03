@@ -1,20 +1,10 @@
 'use client'
 
+import { PartyFormDialog } from '@/components/ec/party-form-dialog'
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { ImagePreviewDialog } from '@/components/shared/image-preview-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog'
-import { ImageUpload } from '@/components/ui/image-upload'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Table,
   TableBody,
@@ -23,81 +13,31 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Textarea } from '@/components/ui/textarea'
-import {
-  useCreatePartyMutation,
-  useDeletePartyMutation,
-  useParties,
-  useUpdatePartyMutation,
-} from '@/hooks/use-parties'
-import { type Party } from '@/types'
+import { useDeletePartyMutation, useParties } from '@/hooks/use-parties'
+import { type Party } from '@/types/party'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Edit, Image as ImageIcon, LayoutGrid, Plus, Trash } from 'lucide-react'
+import { Edit, Image as ImageIcon, LayoutGrid, Trash } from 'lucide-react'
+import Image from 'next/image'
 import { useState } from 'react'
-import { toast } from 'sonner'
 
 export default function ManagePartiesPage() {
   const { data: parties, isLoading } = useParties()
-  const createParty = useCreatePartyMutation()
-  const updateParty = useUpdatePartyMutation()
   const deleteParty = useDeletePartyMutation()
 
   const [isOpen, setIsOpen] = useState(false)
-  const [isEdit, setIsEdit] = useState(false)
-
-  // Form state
-  const [currentId, setCurrentId] = useState<number | null>(null)
-  const [name, setName] = useState('')
-  const [logoUrl, setLogoUrl] = useState('')
-  const [policy, setPolicy] = useState('')
+  const [editParty, setEditParty] = useState<Party | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-
-  const resetForm = () => {
-    setName('')
-    setLogoUrl('')
-    setPolicy('')
-    setCurrentId(null)
-    setIsEdit(false)
-  }
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
 
   const handleEdit = (party: Party) => {
-    setName(party.name)
-    setLogoUrl(party.logo_url || '')
-    setPolicy(party.policy || '')
-    setCurrentId(party.id)
-    setIsEdit(true)
+    setEditParty(party)
     setIsOpen(true)
   }
 
-  const handleSubmit = async () => {
-    if (!name) {
-      toast.error('กรุณาระบุชื่อพรรค')
-      return
-    }
-
-    const payload = {
-      name,
-      logo_url: logoUrl,
-      policy,
-    }
-
+  const handleDelete = async () => {
+    if (deleteTarget === null) return
     try {
-      if (isEdit && currentId) {
-        await updateParty.mutateAsync({ id: currentId, payload })
-      } else {
-        await createParty.mutateAsync(payload)
-      }
-      setIsOpen(false)
-      resetForm()
-    } catch {
-      // Error handled in hook
-    }
-  }
-
-  const handleDelete = async (id: number) => {
-    if (!confirm('ยืนยันลบพรรคการเมืองนี้?')) return
-    try {
-      await deleteParty.mutateAsync(id)
+      await deleteParty.mutateAsync(deleteTarget)
     } catch {
       // Error handled in hook
     }
@@ -118,89 +58,14 @@ export default function ManagePartiesPage() {
             บริหารจัดการข้อมูลพรรคการเมือง นโยบาย และสัญลักษณ์
           </p>
         </div>
-        <Dialog
+        <PartyFormDialog
           open={isOpen}
           onOpenChange={(open) => {
             setIsOpen(open)
-            if (!open) resetForm()
+            if (!open) setEditParty(null)
           }}
-        >
-          <DialogTrigger asChild>
-            <Button className='shadow-lg hover:shadow-xl transition-[box-shadow,colors] duration-300 gap-2 bg-blue-600 hover:bg-blue-700'>
-              <Plus className='h-4 w-4' />
-              <span>เพิ่มพรรคการเมือง</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className='sm:max-w-[600px] overflow-hidden rounded-xl border-none shadow-2xl'>
-            <DialogHeader className='bg-slate-50 -mx-6 -mt-6 p-6 border-b'>
-              <DialogTitle className='text-xl'>
-                {isEdit ? 'แก้ไขพรรคการเมือง' : 'เพิ่มพรรคการเมือง'}
-              </DialogTitle>
-              <DialogDescription>
-                กำหนดข้อมูลพื้นฐาน และนโยบายหลักของพรรค
-              </DialogDescription>
-            </DialogHeader>
-            <div className='grid gap-6 py-6'>
-              <div className='space-y-4'>
-                <div className='space-y-2'>
-                  <Label htmlFor='name' className='text-sm font-semibold'>
-                    ชื่อพรรค
-                  </Label>
-                  <Input
-                    id='name'
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder='เช่น พรรคใจดี'
-                    className='bg-slate-50/50 focus:bg-white transition-colors'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label className='text-sm font-semibold'>โลโก้พรรค</Label>
-                  <ImageUpload
-                    value={logoUrl}
-                    onChange={setLogoUrl}
-                    folder='parties'
-                    disabled={createParty.isPending || updateParty.isPending}
-                    placeholder='คลิกหรือลากโลโก้พรรคมาวาง'
-                  />
-                </div>
-              </div>
-
-              <div className='space-y-2'>
-                <Label htmlFor='policy' className='text-sm font-semibold'>
-                  นโยบายของพรรค
-                </Label>
-                <Textarea
-                  id='policy'
-                  value={policy}
-                  onChange={(e) => setPolicy(e.target.value)}
-                  className='min-h-[120px] bg-slate-50/50 focus:bg-white transition-colors'
-                  placeholder='ระบุรายละเอียดนโยบายหลักของพรรค...'
-                />
-              </div>
-            </div>
-            <DialogFooter className='bg-slate-50 -mx-6 -mb-6 p-6 border-t'>
-              <Button
-                variant='ghost'
-                onClick={() => setIsOpen(false)}
-                className='mr-auto'
-              >
-                ยกเลิก
-              </Button>
-              <Button
-                onClick={handleSubmit}
-                disabled={createParty.isPending || updateParty.isPending}
-                className='min-w-[120px] bg-blue-600 hover:bg-blue-700 shadow-md'
-              >
-                {createParty.isPending || updateParty.isPending
-                  ? 'กำลังบันทึก...'
-                  : isEdit
-                    ? 'บันทึกการแก้ไข'
-                    : 'บันทึกข้อมูล'}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+          editParty={editParty}
+        />
       </div>
 
       <Card className='border-none shadow-xl bg-white/50 backdrop-blur-sm overflow-hidden hidden md:block'>
@@ -262,18 +127,21 @@ export default function ManagePartiesPage() {
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                         className='group hover:bg-slate-50/50 transition-colors border-slate-50'
+                        style={{
+                          contentVisibility: 'auto',
+                          containIntrinsicSize: '0 80px',
+                        }}
                       >
                         <TableCell className='px-6 py-4'>
                           {p.logo_url ? (
-                            <img
+                            <Image
                               src={p.logo_url}
                               alt={p.name}
+                              width={80}
+                              height={80}
+                              unoptimized
                               className='w-20 h-20 object-cover rounded-lg p-1 bg-white shadow-sm ring-1 ring-slate-100 group-hover:scale-110 transition-transform duration-300 cursor-pointer'
                               onClick={() => setPreviewUrl(p.logo_url || null)}
-                              onError={(e) => {
-                                ;(e.target as HTMLImageElement).src =
-                                  'https://placehold.co/80x80?text=No+Image'
-                              }}
                             />
                           ) : (
                             <div className='w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400'>
@@ -311,7 +179,7 @@ export default function ManagePartiesPage() {
                               variant='ghost'
                               size='icon'
                               className='rounded-full text-slate-400 hover:text-red-500 hover:bg-red-50 transition-[box-shadow,colors] active:scale-95'
-                              onClick={() => handleDelete(p.id)}
+                              onClick={() => setDeleteTarget(p.id)}
                             >
                               <Trash className='h-4 w-4' />
                             </Button>
@@ -361,9 +229,12 @@ export default function ManagePartiesPage() {
                 <div className='flex items-start gap-4'>
                   <div className='shrink-0'>
                     {p.logo_url ? (
-                      <img
+                      <Image
                         src={p.logo_url}
                         alt={p.name}
+                        width={80}
+                        height={80}
+                        unoptimized
                         className='w-20 h-20 object-cover rounded-lg p-1 bg-white shadow-sm ring-1 ring-slate-100'
                       />
                     ) : (
@@ -400,7 +271,7 @@ export default function ManagePartiesPage() {
                     variant='outline'
                     size='sm'
                     className='rounded-full text-slate-500 hover:text-red-500 hover:bg-red-50 hover:border-red-200 w-full sm:w-auto'
-                    onClick={() => handleDelete(p.id)}
+                    onClick={() => setDeleteTarget(p.id)}
                   >
                     <Trash className='h-4 w-4 mr-1.5' /> ลบ
                   </Button>
@@ -414,6 +285,16 @@ export default function ManagePartiesPage() {
       <ImagePreviewDialog
         url={previewUrl}
         onClose={() => setPreviewUrl(null)}
+      />
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title='ยืนยันลบพรรคการเมือง'
+        description='คุณต้องการลบพรรคการเมืองนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้'
+        confirmLabel='ลบพรรค'
+        onConfirm={handleDelete}
+        isPending={deleteParty.isPending}
       />
     </motion.div>
   )

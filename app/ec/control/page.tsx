@@ -1,5 +1,6 @@
 'use client'
 
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PaginationBar } from '@/components/shared/pagination-bar'
 import { Button } from '@/components/ui/button'
 import {
@@ -26,7 +27,7 @@ import {
 import { useProvinces } from '@/hooks/use-location'
 import { useURLPagination } from '@/hooks/use-url-pagination'
 import { Lock, RefreshCw, Unlock } from 'lucide-react'
-import { Suspense } from 'react'
+import { Suspense, useState } from 'react'
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ElectionControlPage() {
@@ -97,14 +98,9 @@ function ControlPageContent() {
     togglePollMutation.mutate({ id, isOpen: !currentStatus })
   }
 
-  async function toggleAll(open: boolean) {
-    if (
-      !confirm(
-        `คุณต้องการที่จะ${open ? 'เปิด' : 'ปิด'}หีบเลือกตั้ง "ทุกเขต" ใช่หรือไม่?`,
-      )
-    )
-      return
+  const [confirmToggleAll, setConfirmToggleAll] = useState<boolean | null>(null)
 
+  async function toggleAll(open: boolean) {
     if (open) {
       await openAllMutation.mutateAsync()
     } else {
@@ -122,7 +118,7 @@ function ControlPageContent() {
           <Button
             variant='outline'
             className='text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200 w-full sm:w-auto'
-            onClick={() => toggleAll(true)}
+            onClick={() => setConfirmToggleAll(true)}
             disabled={openAllMutation.isPending || closeAllMutation.isPending}
           >
             <Unlock className='w-4 h-4 mr-2' /> เปิดทุกเขต
@@ -130,7 +126,7 @@ function ControlPageContent() {
           <Button
             variant='outline'
             className='text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200 w-full sm:w-auto'
-            onClick={() => toggleAll(false)}
+            onClick={() => setConfirmToggleAll(false)}
             disabled={openAllMutation.isPending || closeAllMutation.isPending}
           >
             <Lock className='w-4 h-4 mr-2' /> ปิดทุกเขต
@@ -319,6 +315,21 @@ function ControlPageContent() {
           onItemsPerPageChange={actions.setLimit}
         />
       </div>
+
+      <ConfirmDialog
+        open={confirmToggleAll !== null}
+        onOpenChange={(open) => !open && setConfirmToggleAll(null)}
+        title={
+          confirmToggleAll ? 'เปิดหีบเลือกตั้งทุกเขต' : 'ปิดหีบเลือกตั้งทุกเขต'
+        }
+        description={`คุณต้องการที่จะ${confirmToggleAll ? 'เปิด' : 'ปิด'}หีบเลือกตั้ง "ทุกเขต" ใช่หรือไม่?`}
+        confirmLabel='ยืนยัน'
+        variant={confirmToggleAll ? 'default' : 'destructive'}
+        onConfirm={async () => {
+          if (confirmToggleAll !== null) await toggleAll(confirmToggleAll)
+        }}
+        isPending={openAllMutation.isPending || closeAllMutation.isPending}
+      />
     </div>
   )
 }

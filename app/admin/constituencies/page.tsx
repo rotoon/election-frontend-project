@@ -1,5 +1,6 @@
 'use client'
 
+import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PaginationBar } from '@/components/shared/pagination-bar'
 import { Button } from '@/components/ui/button'
 import {
@@ -114,10 +115,12 @@ function ConstituenciesPageContent() {
     }
   }
 
-  async function handleDelete(id: number) {
-    if (!confirm('ยืนยันลบเขตเลือกตั้งนี้?')) return
+  const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
+
+  async function handleDelete() {
+    if (deleteTarget === null) return
     try {
-      await deleteConstituency.mutateAsync(id)
+      await deleteConstituency.mutateAsync(deleteTarget)
       refetch()
     } catch {
       // Error handled in hook
@@ -298,7 +301,7 @@ function ConstituenciesPageContent() {
                       variant='ghost'
                       size='icon'
                       className='h-8 w-8 hover:bg-red-50'
-                      onClick={() => handleDelete(c.id)}
+                      onClick={() => setDeleteTarget(c.id)}
                       disabled={deleteConstituency.isPending}
                     >
                       <Trash className='h-4 w-4 text-red-500' />
@@ -318,6 +321,15 @@ function ConstituenciesPageContent() {
         itemsPerPage={state.limit}
         onPageChange={actions.setPage}
         onItemsPerPageChange={actions.setLimit}
+      />
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => !open && setDeleteTarget(null)}
+        title='ยืนยันลบเขตเลือกตั้ง'
+        description='คุณต้องการลบเขตเลือกตั้งนี้ใช่หรือไม่? การดำเนินการนี้ไม่สามารถย้อนกลับได้'
+        confirmLabel='ลบเขต'
+        onConfirm={handleDelete}
+        isPending={deleteConstituency.isPending}
       />
     </div>
   )

@@ -11,6 +11,7 @@ import {
 import { usePartyStats } from '@/hooks/use-parties'
 import type { PartyStats } from '@/types/party'
 import { Info, Users } from 'lucide-react'
+import Image from 'next/image'
 import { useState } from 'react'
 
 export default function PartiesPage() {
@@ -19,7 +20,24 @@ export default function PartiesPage() {
 
   if (isLoading) {
     return (
-      <div className='flex justify-center items-center h-64'>Loading...</div>
+      <div className='space-y-8'>
+        <div className='text-center'>
+          <div className='h-9 w-56 bg-slate-200 rounded animate-pulse mx-auto' />
+          <div className='h-5 w-80 bg-slate-100 rounded animate-pulse mx-auto mt-3' />
+        </div>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className='bg-white rounded-lg border p-6 space-y-4'>
+              <div className='flex justify-between items-center'>
+                <div className='h-6 w-32 bg-slate-200 rounded animate-pulse' />
+                <div className='h-8 w-8 bg-slate-100 rounded animate-pulse' />
+              </div>
+              <div className='h-10 w-16 bg-slate-200 rounded animate-pulse' />
+              <div className='h-2 w-full bg-slate-100 rounded-full animate-pulse' />
+            </div>
+          ))}
+        </div>
+      </div>
     )
   }
 
@@ -42,10 +60,12 @@ export default function PartiesPage() {
           <DialogHeader>
             <div className='flex items-center space-x-4 mb-4'>
               {selectedParty?.logo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={selectedParty.logo_url}
                   alt={selectedParty.name}
+                  width={64}
+                  height={64}
+                  unoptimized
                   className='w-16 h-16 object-contain'
                 />
               ) : (
@@ -90,10 +110,12 @@ export default function PartiesPage() {
                 {party.name}
               </CardTitle>
               {party.logo_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={party.logo_url}
                   alt={party.name}
+                  width={32}
+                  height={32}
+                  unoptimized
                   className='w-8 h-8 object-contain'
                 />
               ) : (

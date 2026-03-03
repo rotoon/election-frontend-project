@@ -24,7 +24,7 @@ export function CandidateCard({
     <button
       type='button'
       className={`group relative flex flex-col rounded-xl overflow-hidden text-left transition-[transform,box-shadow,opacity,filter] duration-500 ease-[cubic-bezier(0.25,0.1,0.25,1)] will-change-transform touch-manipulation
-        ${isDisabled ? 'opacity-60 grayscale cursor-not-allowed' : 'cursor-pointer hover:-translate-y-2 hover:shadow-2xl active:scale-[0.98]'}
+        ${isDisabled ? 'opacity-60 grayscale cursor-not-allowed' : 'cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-transform active:scale-[0.98]'}
         ${isSelected ? 'shadow-[0_20px_40px_rgba(0,0,0,0.12)] ring-4 ring-offset-4 ring-offset-white ring-[color:var(--party-color)]' : 'shadow-[0_8px_24px_rgba(0,0,0,0.06)] border border-white/50'}
         bg-white/90 backdrop-blur-3xl w-full
         focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-primary/60 focus-visible:outline-none

@@ -73,37 +73,65 @@ export function useAdminConstituencies(params: {
   limit?: number
 }) {
   const { province, page = 1, limit = 10 } = params
+  const hasProvinceFilter = province && province !== 'all'
 
   return useQuery<ManageConstituenciesResult>({
     queryKey: ['admin-constituencies', province, page, limit],
     queryFn: async () => {
-      // Fetch all data without pagination (backend may not support it)
-      const { data } = await api.get('/admin/constituencies')
+      if (hasProvinceFilter) {
+        // Backend ไม่รองรับ filter province — ดึงทั้งหมดแล้ว filter ฝั่ง client
+        const { data } = await api.get('/admin/constituencies?limit=9999')
+        const allData = Array.isArray(data)
+          ? data
+          : data.data || data.constituency || []
 
-      // Backend returns array directly
-      const allData = Array.isArray(data) ? data : data.data || []
-
-      // Filter by provinceId if provided
-      let filteredData = allData
-      if (province && province !== 'all') {
-        filteredData = allData.filter(
-          (c: { provinceId: number }) => c.provinceId === parseInt(province),
+        const filtered = allData.filter(
+          (c: { provinceId: number }) =>
+            c.provinceId === parseInt(province as string),
         )
+
+        const total = filtered.length
+        const totalPages = Math.max(1, Math.ceil(total / limit))
+        const start = (page - 1) * limit
+        const paginatedData = filtered.slice(start, start + limit)
+
+        const constituencies = transformConstituencies(
+          paginatedData,
+        ) as Constituency[]
+
+        return {
+          constituencies,
+          meta: { total, page, limit, totalPages },
+        }
       }
 
-      // Client-side pagination
-      const total = filteredData.length
-      const totalPages = Math.ceil(total / limit)
-      const start = (page - 1) * limit
-      const paginatedData = filteredData.slice(start, start + limit)
+      // ไม่มี filter → ใช้ server-side pagination ปกติ
+      const queryParams = new URLSearchParams()
+      queryParams.set('page', page.toString())
+      queryParams.set('limit', limit.toString())
 
-      const constituencies = transformConstituencies(
-        paginatedData,
-      ) as Constituency[]
+      const { data } = await api.get(
+        `/admin/constituencies?${queryParams.toString()}`,
+      )
+
+      const rawData = Array.isArray(data)
+        ? data
+        : data.data || data.constituency || []
+
+      const constituencies = transformConstituencies(rawData) as Constituency[]
+
+      const meta = {
+        total: data.total ?? constituencies.length,
+        page: data.page ?? page,
+        limit: data.limit ?? limit,
+        totalPages:
+          data.totalPages ??
+          Math.max(1, Math.ceil((data.total ?? constituencies.length) / limit)),
+      }
 
       return {
         constituencies,
-        meta: { total, page, limit, totalPages },
+        meta,
       }
     },
   })

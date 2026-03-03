@@ -66,13 +66,15 @@ export function useManageUsers(params: {
         } as User
       })
 
+      const total = data.total ?? users.length
+
       return {
         users,
         meta: {
-          total: data.total || 0,
-          page: data.page || page,
-          limit: data.limit || limit,
-          totalPages: data.totalPages || 0,
+          total,
+          page: data.page ?? page,
+          limit: data.limit ?? limit,
+          totalPages: data.totalPages ?? Math.max(1, Math.ceil(total / limit)),
         },
       }
     },

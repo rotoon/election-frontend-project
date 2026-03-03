@@ -16,8 +16,10 @@ export interface ApiConstituency {
 
 export interface ApiCandidate {
   id: number
-  fullName: string
+  firstName: string
+  lastName: string
   number: number
+  candidatePolicy?: string | null
   imageUrl: string
   party?: ApiPartyInCandidate
 }

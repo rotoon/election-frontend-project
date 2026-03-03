@@ -47,9 +47,14 @@ export interface TransformedCandidate {
 }
 
 export function transformCandidate(c: ApiCandidate): TransformedCandidate {
+  // Combine firstName + lastName (API เปลี่ยนจาก fullName เป็น firstName/lastName)
+  const fullName = [c.firstName, c.lastName].filter(Boolean).join(' ')
+  // นโยบาย: ใช้ candidatePolicy ก่อน, fallback เป็น party.policy
+  const policy = c.candidatePolicy || c.party?.policy
+
   return {
     id: c.id,
-    full_name: c.fullName,
+    full_name: fullName,
     candidate_number: c.number,
     image_url: c.imageUrl,
     party: c.party
@@ -57,7 +62,7 @@ export function transformCandidate(c: ApiCandidate): TransformedCandidate {
           id: c.party.id,
           name: c.party.name,
           logo_url: c.party.logoUrl,
-          policy: c.party.policy,
+          policy: policy,
         }
       : null,
   }

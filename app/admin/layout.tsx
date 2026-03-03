@@ -2,7 +2,7 @@
 
 import { SidebarLayout } from '@/components/shared/sidebar-layout'
 import { useAuthStore } from '@/store/useAuthStore'
-import { LayoutDashboard, Map, Users } from 'lucide-react'
+import { Map, Users } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 export default function AdminLayout({
@@ -19,7 +19,6 @@ export default function AdminLayout({
   }
 
   const navItems = [
-    { href: '/admin/dashboard', label: 'ภาพรวม', icon: LayoutDashboard },
     { href: '/admin/constituencies', label: 'จัดการเขตเลือกตั้ง', icon: Map },
     { href: '/admin/users', label: 'จัดการผู้ใช้งาน', icon: Users },
   ]

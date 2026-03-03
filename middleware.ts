@@ -82,10 +82,10 @@ export function middleware(request: NextRequest) {
           // User doesn't have required role, redirect to appropriate portal
           if (userRoles.includes('ROLE_ADMIN')) {
             return NextResponse.redirect(
-              new URL('/admin/dashboard', request.url),
+              new URL('/admin/constituencies', request.url),
             )
           } else if (userRoles.includes('ROLE_EC')) {
-            return NextResponse.redirect(new URL('/ec/dashboard', request.url))
+            return NextResponse.redirect(new URL('/ec/parties', request.url))
           } else {
             // No valid role, go to voter portal
             return NextResponse.redirect(new URL('/vote', request.url))

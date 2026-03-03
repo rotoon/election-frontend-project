@@ -19,14 +19,14 @@ import {
 } from '@/components/ui/table'
 import {
   useCloseAllPollsMutation,
-  useConstituencies,
   useManageConstituencies,
   useOpenAllPollsMutation,
   useTogglePollMutation,
 } from '@/hooks/use-constituencies'
+import { useProvinces } from '@/hooks/use-location'
 import { Lock, RefreshCw, Unlock } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
+import { Suspense, useCallback, useEffect, useState } from 'react'
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ElectionControlPage() {
@@ -52,7 +52,10 @@ function ControlPageSkeleton() {
       </div>
       <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
+          <div
+            key={i}
+            className='h-12 bg-slate-100 rounded animate-pulse'
+          />
         ))}
       </div>
     </div>
@@ -64,8 +67,8 @@ function ControlPageContent() {
   const searchParams = useSearchParams()
 
   // Read from URL params or use defaults
-  const [filterProvince, setFilterProvince] = useState<string>(
-    searchParams.get('province') || 'all',
+  const [filterProvinceId, setFilterProvinceId] = useState<string>(
+    searchParams.get('provinceId') || 'all',
   )
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get('page') || '1'),
@@ -77,7 +80,7 @@ function ControlPageContent() {
   // Update URL when params change
   const updateURL = useCallback(() => {
     const params = new URLSearchParams()
-    if (filterProvince !== 'all') params.set('province', filterProvince)
+    if (filterProvinceId !== 'all') params.set('provinceId', filterProvinceId)
     if (currentPage !== 1) params.set('page', currentPage.toString())
     if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
 
@@ -85,7 +88,7 @@ function ControlPageContent() {
     router.push(queryString ? `?${queryString}` : '/ec/control', {
       scroll: false,
     })
-  }, [filterProvince, currentPage, itemsPerPage, router])
+  }, [filterProvinceId, currentPage, itemsPerPage, router])
 
   useEffect(() => {
     updateURL()
@@ -93,13 +96,13 @@ function ControlPageContent() {
 
   // Hooks - server side pagination
   const { data, isLoading, refetch } = useManageConstituencies({
-    province: filterProvince,
+    provinceId: filterProvinceId === 'all' ? null : filterProvinceId,
     page: currentPage,
     limit: itemsPerPage,
   })
 
-  // Get all constituencies for province dropdown
-  const { data: allConstituencies } = useConstituencies()
+  // Get all provinces for filter dropdown
+  const { data: provinces } = useProvinces()
 
   const togglePollMutation = useTogglePollMutation()
   const openAllMutation = useOpenAllPollsMutation()
@@ -113,16 +116,9 @@ function ControlPageContent() {
     totalPages: 1,
   }
 
-  // Get unique provinces for filter dropdown
-  const provinces = useMemo(() => {
-    return Array.from(
-      new Set(allConstituencies?.map((c) => c.province) || []),
-    ).sort()
-  }, [allConstituencies])
-
   // Handlers
   const handleFilterProvinceChange = (value: string) => {
-    setFilterProvince(value)
+    setFilterProvinceId(value)
     setCurrentPage(1)
   }
 
@@ -180,7 +176,7 @@ function ControlPageContent() {
         <div className='flex items-center gap-2 w-full sm:w-auto'>
           <span className='text-sm font-medium hidden sm:inline'>จังหวัด:</span>
           <Select
-            value={filterProvince}
+            value={filterProvinceId}
             onValueChange={handleFilterProvinceChange}
           >
             <SelectTrigger className='w-full sm:w-[200px]'>
@@ -188,9 +184,12 @@ function ControlPageContent() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value='all'>ทั้งหมด</SelectItem>
-              {provinces.map((p) => (
-                <SelectItem key={p} value={p}>
-                  {p}
+              {provinces?.map((p: { id: number; name: string }) => (
+                <SelectItem
+                  key={p.id}
+                  value={p.id.toString()}
+                >
+                  {p.name}
                 </SelectItem>
               ))}
             </SelectContent>

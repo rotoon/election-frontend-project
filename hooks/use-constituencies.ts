@@ -8,11 +8,16 @@ import { toast } from 'sonner'
 export type { Constituency } from '@/types/constituency'
 
 // Hook to fetch All Constituencies (Public / Admin / EC)
-export function useConstituencies() {
+export function useConstituencies(provinceId?: string | null) {
   return useQuery({
-    queryKey: ['constituencies'],
+    queryKey: ['constituencies', provinceId],
     queryFn: async () => {
-      const { data } = await api.get('/ec/constituencies')
+      const params = new URLSearchParams()
+      if (provinceId && provinceId !== 'all') {
+        params.set('provinceId', provinceId)
+        params.set('limit', '1000') // Ensure we get all for dropdowns
+      }
+      const { data } = await api.get(`/ec/constituencies?${params.toString()}`)
 
       const rawData =
         data.data || data.constituency || (Array.isArray(data) ? data : [])
@@ -23,21 +28,21 @@ export function useConstituencies() {
 
 // Hook for EC Control Page with server-side pagination
 export function useManageConstituencies(params: {
-  province?: string | null
+  provinceId?: string | null
   page?: number
   limit?: number
 }) {
-  const { province, page = 1, limit = 10 } = params
+  const { provinceId, page = 1, limit = 10 } = params
 
   return useQuery<ManageConstituenciesResult>({
-    queryKey: ['manage-constituencies', province, page, limit],
+    queryKey: ['manage-constituencies', provinceId, page, limit],
     queryFn: async () => {
       const queryParams = new URLSearchParams()
       queryParams.set('page', page.toString())
       queryParams.set('limit', limit.toString())
 
-      if (province && province !== 'all') {
-        queryParams.set('province', province)
+      if (provinceId && provinceId !== 'all') {
+        queryParams.set('provinceId', provinceId)
       }
 
       const { data } = await api.get(
@@ -49,13 +54,21 @@ export function useManageConstituencies(params: {
 
       const constituencies = transformConstituencies(rawData) as Constituency[]
 
+      const total =
+        data.total ??
+        data.meta?.total ??
+        data.pagination?.total ??
+        data.totalCount ??
+        constituencies.length
+
       const meta = {
-        total: data.total ?? constituencies.length,
-        page: data.page ?? page,
-        limit: data.limit ?? limit,
+        total,
+        page: data.page ?? data.meta?.page ?? page,
+        limit: data.limit ?? data.meta?.limit ?? limit,
         totalPages:
           data.totalPages ??
-          Math.max(1, Math.ceil(constituencies.length / limit)),
+          data.meta?.totalPages ??
+          Math.max(1, Math.ceil(total / limit)),
       }
 
       return {
@@ -68,47 +81,22 @@ export function useManageConstituencies(params: {
 
 // Hook for Admin Constituencies Page
 export function useAdminConstituencies(params: {
-  province?: string | null
+  provinceId?: string | null
   page?: number
   limit?: number
 }) {
-  const { province, page = 1, limit = 10 } = params
-  const hasProvinceFilter = province && province !== 'all'
+  const { provinceId, page = 1, limit = 10 } = params
 
   return useQuery<ManageConstituenciesResult>({
-    queryKey: ['admin-constituencies', province, page, limit],
+    queryKey: ['admin-constituencies', provinceId, page, limit],
     queryFn: async () => {
-      if (hasProvinceFilter) {
-        // Backend ไม่รองรับ filter province — ดึงทั้งหมดแล้ว filter ฝั่ง client
-        const { data } = await api.get('/admin/constituencies?limit=9999')
-        const allData = Array.isArray(data)
-          ? data
-          : data.data || data.constituency || []
-
-        const filtered = allData.filter(
-          (c: { provinceId: number }) =>
-            c.provinceId === parseInt(province as string),
-        )
-
-        const total = filtered.length
-        const totalPages = Math.max(1, Math.ceil(total / limit))
-        const start = (page - 1) * limit
-        const paginatedData = filtered.slice(start, start + limit)
-
-        const constituencies = transformConstituencies(
-          paginatedData,
-        ) as Constituency[]
-
-        return {
-          constituencies,
-          meta: { total, page, limit, totalPages },
-        }
-      }
-
-      // ไม่มี filter → ใช้ server-side pagination ปกติ
       const queryParams = new URLSearchParams()
       queryParams.set('page', page.toString())
       queryParams.set('limit', limit.toString())
+
+      if (provinceId && provinceId !== 'all') {
+        queryParams.set('provinceId', provinceId)
+      }
 
       const { data } = await api.get(
         `/admin/constituencies?${queryParams.toString()}`,
@@ -120,13 +108,21 @@ export function useAdminConstituencies(params: {
 
       const constituencies = transformConstituencies(rawData) as Constituency[]
 
+      const total =
+        data.total ??
+        data.meta?.total ??
+        data.pagination?.total ??
+        data.totalCount ??
+        constituencies.length
+
       const meta = {
-        total: data.total ?? constituencies.length,
-        page: data.page ?? page,
-        limit: data.limit ?? limit,
+        total,
+        page: data.page ?? data.meta?.page ?? page,
+        limit: data.limit ?? data.meta?.limit ?? limit,
         totalPages:
           data.totalPages ??
-          Math.max(1, Math.ceil((data.total ?? constituencies.length) / limit)),
+          data.meta?.totalPages ??
+          Math.max(1, Math.ceil(total / limit)),
       }
 
       return {

@@ -80,7 +80,10 @@ function CandidatesPageSkeleton() {
       </div>
       <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
+          <div
+            key={i}
+            className='h-12 bg-slate-100 rounded animate-pulse'
+          />
         ))}
       </div>
     </div>
@@ -159,6 +162,18 @@ function CandidatesPageContent() {
     updateURL()
   }, [updateURL])
 
+  // Form state
+  const [editId, setEditId] = useState<number | null>(null)
+  const [citizenId, setCitizenId] = useState('')
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [number, setNumber] = useState('')
+  const [partyId, setPartyId] = useState('')
+  const [constituencyId, setConstituencyId] = useState('')
+  const [formProvince, setFormProvince] = useState('')
+  const [imageUrl, setImageUrl] = useState('')
+  const [candidatePolicy, setCandidatePolicy] = useState('')
+
   // Data hooks
   const { data, isLoading } = useManageCandidates({
     page: currentPage,
@@ -172,11 +187,8 @@ function CandidatesPageContent() {
   })
   const { data: parties } = useParties()
   const { data: provinces } = useProvinces()
-  const {
-    data: constituencies,
-    isLoading: constLoading,
-    error: constError,
-  } = useConstituencies()
+  const { data: constituencies } = useConstituencies(filterProvince)
+  const { data: formConstituencies } = useConstituencies(formProvince)
 
   const candidates = data?.candidates || []
   const meta = data?.meta || {
@@ -195,18 +207,6 @@ function CandidatesPageContent() {
   const [isOpen, setIsOpen] = useState(false)
   const [isEdit, setIsEdit] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
-
-  // Form state
-  const [editId, setEditId] = useState<number | null>(null)
-  const [citizenId, setCitizenId] = useState('')
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [number, setNumber] = useState('')
-  const [partyId, setPartyId] = useState('')
-  const [constituencyId, setConstituencyId] = useState('')
-  const [formProvince, setFormProvince] = useState('')
-  const [imageUrl, setImageUrl] = useState('')
-  const [candidatePolicy, setCandidatePolicy] = useState('')
 
   const resetForm = () => {
     setCitizenId('')
@@ -230,8 +230,13 @@ function CandidatesPageContent() {
     setNumber(c.number.toString())
     setPartyId(c.partyId.toString())
     setConstituencyId(c.constituencyId.toString())
-    // Auto-set province from constituency data
-    setFormProvince(c.constituency?.province?.name || '')
+
+    // Set province from candidate's constituency if available
+    // Note: formConstituencies hook will re-fetch based on this formProvince
+    setFormProvince(
+      c.constituencyId ? c.constituency?.province?.id?.toString() || '' : '',
+    )
+
     setImageUrl(c.imageUrl || '')
     setCandidatePolicy(c.candidatePolicy || '')
     setIsEdit(true)
@@ -378,7 +383,10 @@ function CandidatesPageContent() {
             <div className='grid gap-6 py-6'>
               {/* Row 0: เลขบัตรประชาชน */}
               <div className='space-y-2'>
-                <Label htmlFor='citizenId' className='text-sm font-semibold'>
+                <Label
+                  htmlFor='citizenId'
+                  className='text-sm font-semibold'
+                >
                   เลขบัตรประชาชน 13 หลัก
                 </Label>
                 <Input
@@ -396,7 +404,10 @@ function CandidatesPageContent() {
               {/* Row 1: ชื่อ-นามสกุล */}
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label htmlFor='fname' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='fname'
+                    className='text-sm font-semibold'
+                  >
                     ชื่อ
                   </Label>
                   <Input
@@ -408,7 +419,10 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='lname' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='lname'
+                    className='text-sm font-semibold'
+                  >
                     นามสกุล
                   </Label>
                   <Input
@@ -437,7 +451,10 @@ function CandidatesPageContent() {
                     </SelectTrigger>
                     <SelectContent className='max-h-[250px]'>
                       {provinces?.map((pv) => (
-                        <SelectItem key={pv.id} value={pv.name}>
+                        <SelectItem
+                          key={pv.id}
+                          value={pv.id.toString()}
+                        >
                           {pv.name}
                         </SelectItem>
                       ))}
@@ -445,7 +462,10 @@ function CandidatesPageContent() {
                   </Select>
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='c_id' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='c_id'
+                    className='text-sm font-semibold'
+                  >
                     เขตเลือกตั้ง
                   </Label>
                   <Select
@@ -461,20 +481,24 @@ function CandidatesPageContent() {
                       />
                     </SelectTrigger>
                     <SelectContent className='max-h-[200px]'>
-                      {constituencies
-                        ?.filter((c) => c.province === formProvince)
-                        .map((c) => (
-                          <SelectItem key={c.id} value={c.id.toString()}>
-                            เขต {c.zone_number}
-                          </SelectItem>
-                        ))}
+                      {formConstituencies?.map((c) => (
+                        <SelectItem
+                          key={c.id}
+                          value={c.id.toString()}
+                        >
+                          เขต {c.zone_number}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
               </div>
               <div className='grid grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label htmlFor='number' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='number'
+                    className='text-sm font-semibold'
+                  >
                     หมายเลขผู้สมัคร
                   </Label>
                   <Input
@@ -488,16 +512,25 @@ function CandidatesPageContent() {
                   />
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='party' className='text-sm font-semibold'>
+                  <Label
+                    htmlFor='party'
+                    className='text-sm font-semibold'
+                  >
                     พรรคสังกัด
                   </Label>
-                  <Select value={partyId} onValueChange={setPartyId}>
+                  <Select
+                    value={partyId}
+                    onValueChange={setPartyId}
+                  >
                     <SelectTrigger className='bg-slate-50/50 w-full'>
                       <SelectValue placeholder='เลือกพรรค' />
                     </SelectTrigger>
                     <SelectContent>
                       {parties?.map((p) => (
-                        <SelectItem key={p.id} value={p.id.toString()}>
+                        <SelectItem
+                          key={p.id}
+                          value={p.id.toString()}
+                        >
                           {p.name}
                         </SelectItem>
                       ))}
@@ -520,7 +553,10 @@ function CandidatesPageContent() {
 
               {/* Row 4: นโยบาย */}
               <div className='space-y-2'>
-                <Label htmlFor='policy' className='text-sm font-semibold'>
+                <Label
+                  htmlFor='policy'
+                  className='text-sm font-semibold'
+                >
                   นโยบายส่วนตัว{' '}
                   <span className='text-xs text-muted-foreground font-normal'>
                     (ถ้าไม่ระบุ จะใช้นโยบายของพรรค)
@@ -588,7 +624,10 @@ function CandidatesPageContent() {
             <SelectContent>
               <SelectItem value='all'>ทุกพรรค</SelectItem>
               {parties?.map((p) => (
-                <SelectItem key={p.id} value={p.id.toString()}>
+                <SelectItem
+                  key={p.id}
+                  value={p.id.toString()}
+                >
                   {p.name}
                 </SelectItem>
               ))}
@@ -612,7 +651,10 @@ function CandidatesPageContent() {
             <SelectContent className='max-h-[250px]'>
               <SelectItem value='all'>ทุกจังหวัด</SelectItem>
               {provinces?.map((pv) => (
-                <SelectItem key={pv.id} value={pv.id.toString()}>
+                <SelectItem
+                  key={pv.id}
+                  value={pv.id.toString()}
+                >
                   {pv.name}
                 </SelectItem>
               ))}
@@ -638,7 +680,10 @@ function CandidatesPageContent() {
                 {constituencies
                   ?.filter((c) => c.provinceId.toString() === filterProvince)
                   .map((c) => (
-                    <SelectItem key={c.id} value={c.id.toString()}>
+                    <SelectItem
+                      key={c.id}
+                      value={c.id.toString()}
+                    >
                       เขต {c.zone_number}
                     </SelectItem>
                   ))}
@@ -727,7 +772,10 @@ function CandidatesPageContent() {
                 <AnimatePresence mode='wait'>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={6} className='h-40 text-center'>
+                      <TableCell
+                        colSpan={6}
+                        className='h-40 text-center'
+                      >
                         <div className='flex flex-col items-center justify-center space-y-3'>
                           <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
                           <p className='text-slate-500 font-medium'>
@@ -738,7 +786,10 @@ function CandidatesPageContent() {
                     </TableRow>
                   ) : !candidates || candidates.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className='h-60 text-center'>
+                      <TableCell
+                        colSpan={6}
+                        className='h-60 text-center'
+                      >
                         <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
                           <div className='p-4 bg-slate-50 rounded-full'>
                             <Users className='w-12 h-12 text-slate-200' />

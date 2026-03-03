@@ -68,11 +68,21 @@ export function useManageCandidates(params: GetCandidatesQuery) {
 
       // API ใหม่ return: { total, candidate: [], page, limit, totalPages }
       const candidates: CandidateItem[] = data.candidate || []
+      const total =
+        data.total ??
+        data.meta?.total ??
+        data.pagination?.total ??
+        data.totalCount ??
+        0
+
       const meta = {
-        total: data.total || 0,
-        page: data.page || 1,
-        limit: data.limit || 10,
-        totalPages: data.totalPages || 1,
+        total,
+        page: data.page ?? data.meta?.page ?? page,
+        limit: data.limit ?? data.meta?.limit ?? limit,
+        totalPages:
+          data.totalPages ??
+          data.meta?.totalPages ??
+          Math.max(1, Math.ceil(total / limit)),
       }
 
       return { candidates, meta }

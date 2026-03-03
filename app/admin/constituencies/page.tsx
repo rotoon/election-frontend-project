@@ -75,8 +75,8 @@ function ConstituenciesPageContent() {
   const searchParams = useSearchParams()
 
   // Read from URL params or use defaults
-  const [filterProvince, setFilterProvince] = useState<string>(
-    searchParams.get('province') || 'all',
+  const [filterProvinceId, setFilterProvinceId] = useState<string>(
+    searchParams.get('provinceId') || 'all',
   )
   const [currentPage, setCurrentPage] = useState(
     parseInt(searchParams.get('page') || '1'),
@@ -88,7 +88,7 @@ function ConstituenciesPageContent() {
   // Update URL when params change
   const updateURL = useCallback(() => {
     const params = new URLSearchParams()
-    if (filterProvince !== 'all') params.set('province', filterProvince)
+    if (filterProvinceId !== 'all') params.set('provinceId', filterProvinceId)
     if (currentPage !== 1) params.set('page', currentPage.toString())
     if (itemsPerPage !== 10) params.set('limit', itemsPerPage.toString())
 
@@ -96,7 +96,7 @@ function ConstituenciesPageContent() {
     router.push(queryString ? `?${queryString}` : '/admin/constituencies', {
       scroll: false,
     })
-  }, [filterProvince, currentPage, itemsPerPage, router])
+  }, [filterProvinceId, currentPage, itemsPerPage, router])
 
   useEffect(() => {
     updateURL()
@@ -104,11 +104,12 @@ function ConstituenciesPageContent() {
 
   // Hooks - server side pagination
   const { data, isLoading, refetch } = useAdminConstituencies({
-    province: filterProvince,
+    provinceId: filterProvinceId === 'all' ? null : filterProvinceId,
     page: currentPage,
     limit: itemsPerPage,
   })
 
+  // List of all provinces from API for the dropdown
   const { data: provinces } = useProvinces()
 
   const createConstituency = useCreateConstituencyMutation()
@@ -123,12 +124,12 @@ function ConstituenciesPageContent() {
   }
 
   const [isOpen, setIsOpen] = useState(false)
-  const [provinceId, setProvinceId] = useState<string>('')
+  const [formProvinceId, setFormProvinceId] = useState<string>('')
   const [zone, setZone] = useState('')
 
   // Handlers
   const handleFilterProvinceChange = (value: string) => {
-    setFilterProvince(value)
+    setFilterProvinceId(value)
     setCurrentPage(1)
   }
 
@@ -138,18 +139,18 @@ function ConstituenciesPageContent() {
   }
 
   async function handleCreate() {
-    if (!provinceId || !zone) {
+    if (!formProvinceId || !zone) {
       toast.error('กรุณากรอกข้อมูลให้ครบ')
       return
     }
 
     try {
       await createConstituency.mutateAsync({
-        province: provinceId,
+        province: formProvinceId,
         zoneNumber: parseInt(zone),
       })
       setIsOpen(false)
-      setProvinceId('')
+      setFormProvinceId('')
       setZone('')
       refetch()
     } catch {
@@ -196,8 +197,8 @@ function ConstituenciesPageContent() {
                   จังหวัด
                 </Label>
                 <Select
-                  value={provinceId}
-                  onValueChange={setProvinceId}
+                  value={formProvinceId}
+                  onValueChange={setFormProvinceId}
                 >
                   <SelectTrigger className='col-span-3 w-full'>
                     <SelectValue placeholder='เลือกจังหวัด' />
@@ -246,7 +247,7 @@ function ConstituenciesPageContent() {
         <div className='flex items-center space-x-2'>
           <span className='text-sm font-medium'>จังหวัด:</span>
           <Select
-            value={filterProvince}
+            value={filterProvinceId}
             onValueChange={handleFilterProvinceChange}
           >
             <SelectTrigger className='w-[200px]'>

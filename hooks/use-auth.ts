@@ -72,8 +72,8 @@ export function useLoginMutation() {
         }
 
         // Single-role redirect
-        if (roles.includes('ROLE_ADMIN')) router.push('/admin/dashboard')
-        else if (roles.includes('ROLE_EC')) router.push('/ec/dashboard')
+        if (roles.includes('ROLE_ADMIN')) router.push('/admin/constituencies')
+        else if (roles.includes('ROLE_EC')) router.push('/ec/parties')
         else router.push('/vote')
       } catch (error) {
         console.error('Failed to fetch user details:', error)

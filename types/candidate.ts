@@ -19,6 +19,7 @@ export interface CandidateItem {
   constituency: {
     number: number
     province: {
+      id: number
       name: string
     }
   }

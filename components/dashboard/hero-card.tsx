@@ -15,7 +15,7 @@ interface HeroParty {
 
 export function HeroCard({ party, rank }: { party: HeroParty; rank: number }) {
   return (
-    <div className='bg-[#1e1e1e] rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col h-full group'>
+    <div className='bg-[#1e1e1e] hover:scale-105 rounded-2xl overflow-hidden shadow-2xl border border-white/10 flex flex-col h-full group'>
       {/* Top Banner */}
       <div
         className='h-12 bg-white/5 flex items-center justify-between px-4 border-b border-white/5 transition-colors group-hover:bg-white/10'

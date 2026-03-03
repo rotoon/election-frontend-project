@@ -134,7 +134,7 @@ export default function Home() {
               {top3[0] && (
                 <div
                   className={cn(
-                    'absolute left-1/2 -translate-x-1/2 bottom-8 w-[240px] md:w-[280px] transform transition-[transform,opacity] duration-500 ease-out hover:-translate-y-4 hover:scale-105 animate-in fade-in slide-in-from-bottom-24',
+                    ' absolute left-1/2 -translate-x-1/2 bottom-8 w-[240px] md:w-[280px] transform transition-[transform,opacity] duration-500 ease-out hover:-translate-y-4 hover:scale-105 animate-in fade-in slide-in-from-bottom-24',
                     activeZIndex === 0 ? 'z-50' : 'z-30',
                   )}
                   style={{

@@ -14,9 +14,13 @@ export interface CandidateItem {
   partyId: number
   constituencyId: number
   party: {
+    id: number
     name: string
+    logoUrl?: string
+    policy?: string
   }
   constituency: {
+    id: number
     number: number
     province: {
       id: number

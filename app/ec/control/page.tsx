@@ -2,22 +2,6 @@
 
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PaginationBar } from '@/components/shared/pagination-bar'
-import { Button } from '@/components/ui/button'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import {
   useCloseAllPollsMutation,
   useManageConstituencies,
@@ -26,10 +10,14 @@ import {
 } from '@/hooks/use-constituencies'
 import { useProvinces } from '@/hooks/use-location'
 import { useURLPagination } from '@/hooks/use-url-pagination'
-import { Lock, RefreshCw, Unlock } from 'lucide-react'
 import { Suspense, useState } from 'react'
 
-// Wrapper component with Suspense boundary for useSearchParams
+// Extracted Components
+import { ControlFilters } from '@/components/ec/control/control-filters'
+import { ControlHeader } from '@/components/ec/control/control-header'
+import { ControlMobileList } from '@/components/ec/control/control-mobile-list'
+import { ControlTable } from '@/components/ec/control/control-table'
+
 export default function ElectionControlPage() {
   return (
     <Suspense fallback={<ControlPageSkeleton />}>
@@ -40,20 +28,24 @@ export default function ElectionControlPage() {
 
 function ControlPageSkeleton() {
   return (
-    <div className='space-y-6'>
+    <div className='space-y-8 animate-in fade-in duration-500'>
       <div className='flex justify-between items-center'>
-        <div className='h-9 w-48 bg-slate-200 rounded animate-pulse' />
-        <div className='flex space-x-2'>
-          <div className='h-10 w-28 bg-slate-200 rounded animate-pulse' />
-          <div className='h-10 w-28 bg-slate-200 rounded animate-pulse' />
+        <div className='h-10 w-64 bg-slate-200 rounded-lg animate-pulse' />
+        <div className='flex space-x-3'>
+          <div className='h-11 w-32 bg-slate-200 rounded-xl animate-pulse' />
+          <div className='h-11 w-32 bg-slate-200 rounded-xl animate-pulse' />
         </div>
       </div>
-      <div className='bg-white p-4 rounded-lg border'>
-        <div className='h-10 w-full bg-slate-100 rounded animate-pulse' />
+      <div className='bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-200/60'>
+        <div className='h-12 w-full bg-slate-100 rounded-xl animate-pulse' />
       </div>
-      <div className='border rounded-md p-4 space-y-2'>
+      <div className='border border-slate-200/60 rounded-2xl overflow-hidden shadow-sm'>
+        <div className='h-14 bg-slate-50 border-b border-slate-200/60' />
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
+          <div
+            key={i}
+            className='h-16 border-b border-slate-100 last:border-0 bg-white'
+          />
         ))}
       </div>
     </div>
@@ -67,14 +59,13 @@ function ControlPageContent() {
 
   const filterProvinceId = state.filters.provinceId || 'all'
 
-  // Hooks - server side pagination
+  // Hooks
   const { data, isLoading, refetch } = useManageConstituencies({
     provinceId: filterProvinceId === 'all' ? null : filterProvinceId,
     page: state.page,
     limit: state.limit,
   })
 
-  // Get all provinces for filter dropdown
   const { data: provinces } = useProvinces()
 
   const togglePollMutation = useTogglePollMutation()
@@ -89,16 +80,11 @@ function ControlPageContent() {
     totalPages: 1,
   }
 
-  // Handlers
-  const handleFilterProvinceChange = (value: string) => {
-    actions.setFilter('provinceId', value)
-  }
+  const [confirmToggleAll, setConfirmToggleAll] = useState<boolean | null>(null)
 
   async function togglePoll(id: number, currentStatus: boolean) {
     togglePollMutation.mutate({ id, isOpen: !currentStatus })
   }
-
-  const [confirmToggleAll, setConfirmToggleAll] = useState<boolean | null>(null)
 
   async function toggleAll(open: boolean) {
     if (open) {
@@ -109,202 +95,35 @@ function ControlPageContent() {
   }
 
   return (
-    <div className='space-y-6'>
-      <div className='flex flex-col md:flex-row md:justify-between md:items-center gap-4'>
-        <h2 className='text-3xl font-bold tracking-tight'>
-          ควบคุมการเลือกตั้ง
-        </h2>
-        <div className='flex flex-col sm:flex-row gap-2'>
-          <Button
-            variant='outline'
-            className='text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200 w-full sm:w-auto'
-            onClick={() => setConfirmToggleAll(true)}
-            disabled={openAllMutation.isPending || closeAllMutation.isPending}
-          >
-            <Unlock className='w-4 h-4 mr-2' /> เปิดทุกเขต
-          </Button>
-          <Button
-            variant='outline'
-            className='text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200 w-full sm:w-auto'
-            onClick={() => setConfirmToggleAll(false)}
-            disabled={openAllMutation.isPending || closeAllMutation.isPending}
-          >
-            <Lock className='w-4 h-4 mr-2' /> ปิดทุกเขต
-          </Button>
-        </div>
-      </div>
+    <div className='space-y-8 pb-10 animate-in fade-in slide-in-from-bottom-2 duration-700'>
+      <ControlHeader
+        onToggleAll={(open) => setConfirmToggleAll(open)}
+        isPending={openAllMutation.isPending || closeAllMutation.isPending}
+      />
 
-      <div className='flex flex-wrap items-center gap-4 bg-white p-4 rounded-lg border'>
-        <div className='flex items-center gap-2 w-full sm:w-auto'>
-          <span className='text-sm font-medium hidden sm:inline'>จังหวัด:</span>
-          <Select
-            value={filterProvinceId}
-            onValueChange={handleFilterProvinceChange}
-          >
-            <SelectTrigger className='w-full sm:w-[200px]'>
-              <SelectValue placeholder='ทั้งหมด' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='all'>ทั้งหมด</SelectItem>
-              {provinces?.map((p: { id: number; name: string }) => (
-                <SelectItem key={p.id} value={p.id.toString()}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <ControlFilters
+        provinceId={filterProvinceId}
+        provinces={provinces}
+        totalCount={meta.total}
+        isLoading={isLoading}
+        onProvinceChange={(v) => actions.setFilter('provinceId', v)}
+        onRefresh={() => refetch()}
+      />
 
-        <Button
-          variant='ghost'
-          size='icon'
-          onClick={() => refetch()}
-          title='Refresh'
-        >
-          <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-        </Button>
+      <ControlTable
+        constituencies={constituencies}
+        isLoading={isLoading}
+        onToggle={togglePoll}
+        isToggling={togglePollMutation.isPending}
+      />
 
-        <div className='flex-1' />
+      <ControlMobileList
+        constituencies={constituencies}
+        isLoading={isLoading}
+        onToggle={togglePoll}
+        isToggling={togglePollMutation.isPending}
+      />
 
-        <div className='text-sm text-muted-foreground'>
-          ทั้งหมด {meta.total} เขต
-        </div>
-      </div>
-
-      <div className='border rounded-md bg-white hidden md:block'>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>จังหวัด</TableHead>
-              <TableHead>เขตที่</TableHead>
-              <TableHead className='text-right'>สถานะปัจจุบัน</TableHead>
-              <TableHead className='text-right'>เปลี่ยนสถานะ</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className='text-center h-24 text-muted-foreground'
-                >
-                  กำลังโหลด...
-                </TableCell>
-              </TableRow>
-            ) : constituencies.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className='text-center h-24 text-muted-foreground'
-                >
-                  ไม่พบข้อมูล
-                </TableCell>
-              </TableRow>
-            ) : (
-              constituencies.map((c) => (
-                <TableRow key={c.id}>
-                  <TableCell>{c.province}</TableCell>
-                  <TableCell>{c.zone_number}</TableCell>
-                  <TableCell className='text-right'>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        c.is_poll_open
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-red-100 text-red-700'
-                      }`}
-                    >
-                      {c.is_poll_open ? 'OPEN (เปิดหีบ)' : 'CLOSED (ปิดหีบ)'}
-                    </span>
-                  </TableCell>
-                  <TableCell className='text-right'>
-                    <Button
-                      size='sm'
-                      variant={c.is_poll_open ? 'destructive' : 'default'}
-                      onClick={() => togglePoll(c.id, c.is_poll_open)}
-                      disabled={togglePollMutation.isPending}
-                      className={
-                        !c.is_poll_open ? 'bg-green-600 hover:bg-green-700' : ''
-                      }
-                    >
-                      {c.is_poll_open ? (
-                        <>
-                          <Lock className='w-3 h-3 mr-1' /> ปิดหีบ
-                        </>
-                      ) : (
-                        <>
-                          <Unlock className='w-3 h-3 mr-1' /> เปิดหีบ
-                        </>
-                      )}
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
-
-      {/* Mobile Card Layout */}
-      <div className='grid gap-4 md:hidden'>
-        {isLoading ? (
-          <div className='text-center py-10 text-muted-foreground bg-white border rounded-lg'>
-            กำลังโหลด...
-          </div>
-        ) : constituencies.length === 0 ? (
-          <div className='text-center py-10 text-muted-foreground bg-white border rounded-lg'>
-            ไม่พบข้อมูล
-          </div>
-        ) : (
-          constituencies.map((c) => (
-            <div
-              key={c.id}
-              className='bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-4'
-            >
-              <div className='flex justify-between items-start'>
-                <div className='space-y-1'>
-                  <h3 className='font-bold text-slate-900'>{c.province}</h3>
-                  <p className='text-slate-500 text-sm'>
-                    เขตเลือกตั้งที่ {c.zone_number}
-                  </p>
-                </div>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${
-                    c.is_poll_open
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}
-                >
-                  {c.is_poll_open ? 'OPEN (เปิดหีบ)' : 'CLOSED (ปิดหีบ)'}
-                </span>
-              </div>
-
-              <div className='pt-3 border-t'>
-                <Button
-                  size='sm'
-                  variant={c.is_poll_open ? 'destructive' : 'default'}
-                  onClick={() => togglePoll(c.id, c.is_poll_open)}
-                  disabled={togglePollMutation.isPending}
-                  className={`w-full ${
-                    !c.is_poll_open ? 'bg-green-600 hover:bg-green-700' : ''
-                  }`}
-                >
-                  {c.is_poll_open ? (
-                    <>
-                      <Lock className='w-4 h-4 mr-2' /> ปิดการลงคะแนน
-                    </>
-                  ) : (
-                    <>
-                      <Unlock className='w-4 h-4 mr-2' /> เปิดการลงคะแนน
-                    </>
-                  )}
-                </Button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-      {/* Pagination */}
       <div className='pb-20'>
         <PaginationBar
           currentPage={state.page}
@@ -318,7 +137,7 @@ function ControlPageContent() {
 
       <ConfirmDialog
         open={confirmToggleAll !== null}
-        onOpenChange={(open) => !open && setConfirmToggleAll(null)}
+        onOpenChange={(open: boolean) => !open && setConfirmToggleAll(null)}
         title={
           confirmToggleAll ? 'เปิดหีบเลือกตั้งทุกเขต' : 'ปิดหีบเลือกตั้งทุกเขต'
         }

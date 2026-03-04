@@ -86,7 +86,10 @@ export function CandidateTable({
               <AnimatePresence mode='wait'>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={6} className='h-40 text-center'>
+                    <TableCell
+                      colSpan={6}
+                      className='h-40 text-center'
+                    >
                       <div className='flex flex-col items-center justify-center space-y-3'>
                         <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
                         <p className='text-slate-500 font-medium'>
@@ -97,7 +100,10 @@ export function CandidateTable({
                   </TableRow>
                 ) : !candidates || candidates.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className='h-60 text-center'>
+                    <TableCell
+                      colSpan={6}
+                      className='h-60 text-center'
+                    >
                       <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
                         <div className='p-4 bg-slate-50 rounded-full'>
                           <Users className='w-12 h-12 text-slate-200' />
@@ -187,9 +193,6 @@ export function CandidateTable({
                             <span className='text-slate-900 font-semibold text-lg'>
                               {c.party?.name || '-'}
                             </span>
-                            <p className='text-sm text-slate-500 line-clamp-2 leading-relaxed italic'>
-                              {c.party?.policy || 'ไม่มีข้อมูลนโยบาย'}
-                            </p>
                           </div>
                         </div>
                       </TableCell>

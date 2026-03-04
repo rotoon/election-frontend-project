@@ -63,7 +63,10 @@ export function CandidateFilters({
           <SelectContent>
             <SelectItem value='all'>ทุกพรรค</SelectItem>
             {parties?.map((p) => (
-              <SelectItem key={p.id} value={p.id.toString()}>
+              <SelectItem
+                key={p.id}
+                value={p.id.toString()}
+              >
                 {p.name}
               </SelectItem>
             ))}
@@ -76,8 +79,10 @@ export function CandidateFilters({
         <Select
           value={filterProvince}
           onValueChange={(v) => {
-            actions.setFilter('province', v)
-            actions.setFilter('constituency', 'all')
+            actions.setFilters({
+              province: v,
+              constituency: 'all',
+            })
           }}
         >
           <SelectTrigger className='w-full sm:w-[180px]'>
@@ -86,7 +91,10 @@ export function CandidateFilters({
           <SelectContent className='max-h-[250px]'>
             <SelectItem value='all'>ทุกจังหวัด</SelectItem>
             {provinces?.map((pv) => (
-              <SelectItem key={pv.id} value={pv.id.toString()}>
+              <SelectItem
+                key={pv.id}
+                value={pv.id.toString()}
+              >
                 {pv.name}
               </SelectItem>
             ))}
@@ -109,7 +117,10 @@ export function CandidateFilters({
               {constituencies
                 ?.filter((c) => c.provinceId.toString() === filterProvince)
                 .map((c) => (
-                  <SelectItem key={c.id} value={c.id.toString()}>
+                  <SelectItem
+                    key={c.id}
+                    value={c.id.toString()}
+                  >
                     เขต {c.zone_number}
                   </SelectItem>
                 ))}

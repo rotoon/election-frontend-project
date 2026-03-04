@@ -3,6 +3,7 @@
 import { ConfirmDialog } from '@/components/shared/confirm-dialog'
 import { PaginationBar } from '@/components/shared/pagination-bar'
 import { useDebounce } from '@/hooks/use-debounce'
+import { useProvinces } from '@/hooks/use-location'
 import { useURLPagination } from '@/hooks/use-url-pagination'
 import { useManageUsers, useUpdateUserRoleMutation } from '@/hooks/use-users'
 import { Suspense, useState } from 'react'
@@ -34,17 +35,21 @@ function UserPageSkeleton() {
 
 function UsersPageContent() {
   const { state, actions } = useURLPagination({
-    filterKeys: ['search'],
+    filterKeys: ['search', 'provinceId'],
   })
 
   const [searchInput, setSearchInput] = useState(state.filters.search || '')
   const debouncedSearch = useDebounce(searchInput, 500)
+  const provinceId = state.filters.provinceId || 'all'
 
   const { data, isLoading } = useManageUsers({
     role: debouncedSearch,
+    provinceId: provinceId,
     page: state.page,
     limit: state.limit,
   })
+
+  const { data: provinces } = useProvinces()
 
   const updateRoleMutation = useUpdateUserRoleMutation()
 
@@ -85,6 +90,9 @@ function UsersPageContent() {
       <UserFilters
         searchInput={searchInput}
         onSearchChange={handleSearchChange}
+        provinceId={provinceId}
+        provinces={provinces}
+        onProvinceChange={(v) => actions.setFilter('provinceId', v)}
         currentUserCount={users.length}
         currentPage={state.page}
       />

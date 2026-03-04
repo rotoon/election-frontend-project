@@ -49,6 +49,9 @@ export function UserTable({
             <TableHead className='h-14 font-bold text-slate-900 px-4'>
               ที่อยู่
             </TableHead>
+            <TableHead className='h-14 font-bold text-slate-900 px-4 whitespace-nowrap'>
+              จังหวัด
+            </TableHead>
             <TableHead className='h-14 font-bold text-slate-900 px-4'>
               เลขบัตรประจำตัวประชาชน
             </TableHead>
@@ -63,7 +66,10 @@ export function UserTable({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={5} className='h-40 text-center'>
+              <TableCell
+                colSpan={6}
+                className='h-40 text-center'
+              >
                 <div className='flex flex-col items-center justify-center gap-3'>
                   <RefreshCw className='h-8 w-8 text-primary animate-spin opacity-20' />
                   <span className='text-sm font-medium text-muted-foreground'>
@@ -74,7 +80,10 @@ export function UserTable({
             </TableRow>
           ) : users.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className='h-40 text-center'>
+              <TableCell
+                colSpan={6}
+                className='h-40 text-center'
+              >
                 <div className='flex flex-col items-center justify-center gap-2'>
                   <Search className='h-8 w-8 text-slate-200' />
                   <span className='text-slate-500 font-medium'>
@@ -93,9 +102,6 @@ export function UserTable({
                 >
                   <TableCell className='px-10'>
                     <div className='flex items-center gap-3'>
-                      <div className='w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-white font-black text-sm uppercase shadow-lg shadow-slate-200'>
-                        {u.firstName[0]}
-                      </div>
                       <div className='flex flex-col'>
                         <span className='font-bold text-slate-900'>
                           {u.firstName} {u.lastName}
@@ -105,6 +111,9 @@ export function UserTable({
                   </TableCell>
                   <TableCell className='px-4 text-slate-600'>
                     {u.address || 'ไม่มีข้อมูลที่อยู่'}
+                  </TableCell>
+                  <TableCell className='px-4 font-bold text-slate-600'>
+                    {u.province?.name || '-'}
                   </TableCell>
                   <TableCell className='px-4 font-mono font-bold text-slate-600'>
                     {formatCitizenId(u.citizenId)}
@@ -130,13 +139,22 @@ export function UserTable({
                           </div>
                         </SelectTrigger>
                         <SelectContent className='rounded-xl shadow-xl'>
-                          <SelectItem value='ROLE_VOTER' className='font-bold'>
+                          <SelectItem
+                            value='ROLE_VOTER'
+                            className='font-bold'
+                          >
                             Voter (ผู้ใช้ทั่วไป)
                           </SelectItem>
-                          <SelectItem value='ROLE_EC' className='font-bold'>
+                          <SelectItem
+                            value='ROLE_EC'
+                            className='font-bold'
+                          >
                             EC Member (กกต.)
                           </SelectItem>
-                          <SelectItem value='ROLE_ADMIN' className='font-bold'>
+                          <SelectItem
+                            value='ROLE_ADMIN'
+                            className='font-bold'
+                          >
                             Admin (ผู้ดูแลระบบ)
                           </SelectItem>
                         </SelectContent>

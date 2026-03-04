@@ -8,7 +8,11 @@ export interface User {
   address: string
   province?: Province | { id: number; name: string }
   district?: District | { id: number; name: string }
-  constituency?: Constituency | { id: number; number: number; isClosed: boolean } | null | undefined
+  constituency?:
+    | Constituency
+    | { id: number; number: number; isClosed: boolean }
+    | null
+    | undefined
   roles: string[]
   createdAt?: string
 }
@@ -20,6 +24,7 @@ export interface AdminUserResponse {
   firstName: string
   lastName: string
   address?: string
+  province?: { id: number; name: string }
   provinceId?: number
   districtId?: number
   constituencyId?: number

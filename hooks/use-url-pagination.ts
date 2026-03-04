@@ -1,25 +1,26 @@
-"use client";
+'use client'
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo } from "react";
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useCallback, useMemo } from 'react'
 
 export interface URLPaginationState {
-  page: number;
-  limit: number;
-  filters: Record<string, string>;
+  page: number
+  limit: number
+  filters: Record<string, string>
 }
 
 export interface URLPaginationActions {
-  setPage: (page: number) => void;
-  setLimit: (limit: number) => void;
-  setFilter: (key: string, value: string) => void;
-  resetFilters: () => void;
+  setPage: (page: number) => void
+  setLimit: (limit: number) => void
+  setFilter: (key: string, value: string) => void
+  setFilters: (filters: Record<string, string>) => void
+  resetFilters: () => void
 }
 
 export interface UseURLPaginationOptions {
-  defaultPage?: number;
-  defaultLimit?: number;
-  filterKeys?: string[];
+  defaultPage?: number
+  defaultLimit?: number
+  filterKeys?: string[]
 }
 
 /**
@@ -33,57 +34,57 @@ export interface UseURLPaginationOptions {
  * })
  */
 export function useURLPagination(options: UseURLPaginationOptions = {}) {
-  const { defaultPage = 1, defaultLimit = 10, filterKeys = [] } = options;
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  const { defaultPage = 1, defaultLimit = 10, filterKeys = [] } = options
+  const router = useRouter()
+  const searchParams = useSearchParams()
 
   // Parse state from URL
   const state = useMemo<URLPaginationState>(() => {
-    const page = parseInt(searchParams.get("page") || String(defaultPage), 10);
+    const page = parseInt(searchParams.get('page') || String(defaultPage), 10)
     const limit = parseInt(
-      searchParams.get("limit") || String(defaultLimit),
-      10
-    );
+      searchParams.get('limit') || String(defaultLimit),
+      10,
+    )
 
-    const filters: Record<string, string> = {};
+    const filters: Record<string, string> = {}
     filterKeys.forEach((key) => {
-      const value = searchParams.get(key);
+      const value = searchParams.get(key)
       if (value) {
-        filters[key] = value;
+        filters[key] = value
       }
-    });
+    })
 
-    return { page, limit, filters };
-  }, [searchParams, defaultPage, defaultLimit, filterKeys]);
+    return { page, limit, filters }
+  }, [searchParams, defaultPage, defaultLimit, filterKeys])
 
   // Helper to update URL
   const updateURL = useCallback(
     (updates: Partial<URLPaginationState>) => {
-      const params = new URLSearchParams(searchParams.toString());
+      const params = new URLSearchParams(searchParams.toString())
 
       if (updates.page !== undefined) {
-        params.set("page", String(updates.page));
+        params.set('page', String(updates.page))
       }
 
       if (updates.limit !== undefined) {
-        params.set("limit", String(updates.limit));
+        params.set('limit', String(updates.limit))
       }
 
       if (updates.filters !== undefined) {
         // Clear old filters first
-        filterKeys.forEach((key) => params.delete(key));
+        filterKeys.forEach((key) => params.delete(key))
         // Set new filters
         Object.entries(updates.filters).forEach(([key, value]) => {
-          if (value && value !== "all") {
-            params.set(key, value);
+          if (value && value !== 'all') {
+            params.set(key, value)
           }
-        });
+        })
       }
 
-      router.push(`?${params.toString()}`);
+      router.push(`?${params.toString()}`)
     },
-    [router, searchParams, filterKeys]
-  );
+    [router, searchParams, filterKeys],
+  )
 
   // Actions
   const actions = useMemo<URLPaginationActions>(
@@ -91,16 +92,20 @@ export function useURLPagination(options: UseURLPaginationOptions = {}) {
       setPage: (page: number) => updateURL({ page }),
       setLimit: (limit: number) => updateURL({ page: 1, limit }),
       setFilter: (key: string, value: string) => {
-        const newFilters = { ...state.filters, [key]: value };
-        updateURL({ page: 1, filters: newFilters });
+        const newFilters = { ...state.filters, [key]: value }
+        updateURL({ page: 1, filters: newFilters })
+      },
+      setFilters: (filters: Record<string, string>) => {
+        const newFilters = { ...state.filters, ...filters }
+        updateURL({ page: 1, filters: newFilters })
       },
       resetFilters: () => {
-        const emptyFilters: Record<string, string> = {};
-        updateURL({ page: 1, filters: emptyFilters });
+        const emptyFilters: Record<string, string> = {}
+        updateURL({ page: 1, filters: emptyFilters })
       },
     }),
-    [updateURL, state.filters]
-  );
+    [updateURL, state.filters],
+  )
 
-  return { state, actions };
+  return { state, actions }
 }

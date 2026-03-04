@@ -19,6 +19,7 @@ export function useUsers() {
         return {
           ...u,
           citizenId: u.citizenId || '',
+          province: u.province,
           roles: roles.length > 0 ? roles : ['ROLE_VOTER'],
         } as User
       })
@@ -29,13 +30,14 @@ export function useUsers() {
 // Hook for Admin Users Page with server-side pagination
 export function useManageUsers(params: {
   role?: string | null
+  provinceId?: string | null
   page?: number
   limit?: number
 }) {
-  const { role, page = 1, limit = 10 } = params
+  const { role, provinceId, page = 1, limit = 10 } = params
 
   return useQuery<ManageUsersResult>({
-    queryKey: ['manage-users', role, page, limit],
+    queryKey: ['manage-users', role, provinceId, page, limit],
     queryFn: async () => {
       // Server-side pagination and filtering
       const { data } = await api.get('/admin/users', {
@@ -43,6 +45,8 @@ export function useManageUsers(params: {
           page,
           limit,
           search: role && role.trim() ? role.trim() : undefined,
+          provinceId:
+            provinceId && provinceId !== 'all' ? provinceId : undefined,
         },
       })
 
@@ -61,6 +65,7 @@ export function useManageUsers(params: {
           firstName: u.firstName,
           lastName: u.lastName,
           address: u.address,
+          province: u.province,
           roles: roles.length > 0 ? roles : ['ROLE_VOTER'],
           createdAt: u.createdAt,
         } as User

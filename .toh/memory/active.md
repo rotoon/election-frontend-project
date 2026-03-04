@@ -13,6 +13,8 @@
 - Updated `app/ec/error.tsx` to Thai.
 - Fixed auth infinite loop bugs (Zustand selector + register form useEffect deps).
 - Verified with `tsc --noEmit` (0 errors) and `npm run build` (14/14 routes).
+- Fixed Province Filter bug by implementing `setFilters` in `useURLPagination` to handle multipart filter updates atomically.
+- Added Province Filter dropdown to Admin Users management page.
 
 ## Next Steps
 

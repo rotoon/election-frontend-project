@@ -27,6 +27,7 @@ export interface CandidateItem {
       name: string
     }
   }
+  updatedAt?: string
 }
 
 /** Response จาก GET /ec/candidates (Paginated) */
@@ -43,7 +44,7 @@ export interface GetCandidatesQuery {
   page?: number
   limit?: number
   search?: string
-  sortBy?: 'id' | 'number' | 'firstName' | 'lastName'
+  sortBy?: 'id' | 'number' | 'firstName' | 'lastName' | 'updatedAt'
   order?: 'asc' | 'desc'
   partyId?: number | string
   constituencyId?: number | string

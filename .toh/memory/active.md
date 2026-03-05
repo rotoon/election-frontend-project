@@ -16,6 +16,7 @@
 - Fixed Province Filter bug by implementing `setFilters` in `useURLPagination` to handle multipart filter updates atomically.
 - Added Province Filter dropdown to Admin Users management page.
 - Updated Constituency Toggle API hooks → new `/ec/constituencies/...` endpoints (toggle, open-all, close-all).
+- Added `updatedAt` column ("แก้ไขล่าสุด") to candidates table with relative time display, default sort by `updatedAt` desc.
 
 ## Next Steps
 

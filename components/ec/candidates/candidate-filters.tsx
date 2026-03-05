@@ -145,6 +145,7 @@ export function CandidateFilters({
             <SelectItem value='number'>เบอร์</SelectItem>
             <SelectItem value='firstName'>ชื่อ</SelectItem>
             <SelectItem value='lastName'>นามสกุล</SelectItem>
+            <SelectItem value='updatedAt'>แก้ไขล่าสุด</SelectItem>
           </SelectContent>
         </Select>
         <Button

@@ -15,12 +15,22 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpDown, Edit, Trash, User, Users } from 'lucide-react'
 import Image from 'next/image'
 
+function formatDateTime(dateStr: string): string {
+  const date = new Date(dateStr)
+  const d = date.getDate().toString().padStart(2, '0')
+  const m = (date.getMonth() + 1).toString().padStart(2, '0')
+  const y = (date.getFullYear() % 100).toString().padStart(2, '0')
+  const hh = date.getHours().toString().padStart(2, '0')
+  const mm = date.getMinutes().toString().padStart(2, '0')
+  return `${d}/${m}/${y} ${hh}:${mm}`
+}
+
 interface CandidateTableProps {
   candidates: CandidateItem[]
   isLoading: boolean
   debouncedSearch: string
   sortBy: string
-  toggleSort: (field: 'number' | 'firstName' | 'lastName') => void
+  toggleSort: (field: 'number' | 'firstName' | 'lastName' | 'updatedAt') => void
   setPreviewUrl: (url: string | null) => void
   handleEdit: (c: CandidateItem) => void
   setDeleteTarget: (c: CandidateItem | null) => void
@@ -77,6 +87,17 @@ export function CandidateTable({
                   {' '}
                   เขตเลือกตั้ง{' '}
                 </TableHead>
+                <TableHead
+                  className='font-bold text-slate-700 px-6 cursor-pointer select-none'
+                  onClick={() => toggleSort('updatedAt')}
+                >
+                  <span className='flex items-center gap-1'>
+                    แก้ไขล่าสุด
+                    {sortBy === 'updatedAt' && (
+                      <ArrowUpDown className='h-3 w-3 text-blue-500' />
+                    )}
+                  </span>
+                </TableHead>
                 <TableHead className='text-right font-bold text-slate-700 px-6'>
                   การจัดการ
                 </TableHead>
@@ -87,7 +108,7 @@ export function CandidateTable({
                 {isLoading ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className='h-40 text-center'
                     >
                       <div className='flex flex-col items-center justify-center space-y-3'>
@@ -101,7 +122,7 @@ export function CandidateTable({
                 ) : !candidates || candidates.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={6}
+                      colSpan={7}
                       className='h-60 text-center'
                     >
                       <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
@@ -182,10 +203,10 @@ export function CandidateTable({
                               onClick={() =>
                                 setPreviewUrl(c.party.logoUrl as string)
                               }
-                              className='w-20 h-20 object-cover rounded-lg bg-slate-50 ring-1 ring-slate-100 hover:scale-110 transition-transform duration-300 cursor-pointer'
+                              className='w-12 h-12 object-cover rounded-lg bg-slate-50 ring-1 ring-slate-100 hover:scale-110 transition-transform duration-300 cursor-pointer'
                             />
                           ) : (
-                            <div className='w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center'>
+                            <div className='w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center'>
                               <Users className='w-8 h-8 text-slate-400' />
                             </div>
                           )}
@@ -201,6 +222,11 @@ export function CandidateTable({
                           {c.constituency
                             ? `${c.constituency.province?.name || '-'} เขต ${c.constituency.number}`
                             : '-'}
+                        </span>
+                      </TableCell>
+                      <TableCell className='px-6'>
+                        <span className='text-xs text-slate-500'>
+                          {c.updatedAt ? formatDateTime(c.updatedAt) : '-'}
                         </span>
                       </TableCell>
                       <TableCell className='px-6 text-right'>

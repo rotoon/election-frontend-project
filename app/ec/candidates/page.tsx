@@ -72,8 +72,12 @@ function CandidatesPageContent() {
 
   // Derived filter values
   const sortBy =
-    (state.filters.sortBy as 'number' | 'firstName' | 'lastName') || ''
-  const order = (state.filters.order as 'asc' | 'desc') || 'asc'
+    (state.filters.sortBy as
+      | 'number'
+      | 'firstName'
+      | 'lastName'
+      | 'updatedAt') || 'updatedAt'
+  const order = (state.filters.order as 'asc' | 'desc') || 'desc'
   const filterParty = state.filters.party || 'all'
   const filterProvince = state.filters.province || 'all'
   const filterConstituency = state.filters.constituency || 'all'
@@ -123,12 +127,13 @@ function CandidatesPageContent() {
     }
   }
 
-  const toggleSort = (field: 'number' | 'firstName' | 'lastName') => {
+  const toggleSort = (
+    field: 'number' | 'firstName' | 'lastName' | 'updatedAt',
+  ) => {
     if (sortBy === field) {
       actions.setFilter('order', order === 'asc' ? 'desc' : 'asc')
     } else {
-      actions.setFilter('sortBy', field)
-      actions.setFilter('order', 'asc')
+      actions.setFilters({ sortBy: field, order: 'asc' })
     }
   }
 

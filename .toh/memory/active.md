@@ -22,6 +22,8 @@
 - **Redesigned Candidate List**: Switched to a premium card-based layout with interactive effects.
 - **Constituency Edit**: Implemented full edit dialog with district management and validation.
 - **Numeric Input UX Fix**: Resolved input clearing issues and set default values to empty strings instead of `0`.
+- **Candidate Form Reset UX Fix**: Fixed issue where candidate form kept old data when closing and reopening the modal.
+- **Party Form Reset UX Fix**: Applied the same fix to `PartyFormDialog`.
 
 ## Next Steps
 

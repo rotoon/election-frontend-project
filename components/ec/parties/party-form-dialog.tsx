@@ -65,18 +65,20 @@ export function PartyFormDialog({
     defaultValues: { name: '', logoUrl: '', policy: '' },
   })
 
-  // Populate form when editing
+  // Populate form when editing or opening
   useEffect(() => {
-    if (editParty) {
-      form.reset({
-        name: editParty.name,
-        logoUrl: editParty.logo_url || '',
-        policy: editParty.policy || '',
-      })
-    } else {
-      form.reset({ name: '', logoUrl: '', policy: '' })
+    if (open) {
+      if (editParty) {
+        form.reset({
+          name: editParty.name,
+          logoUrl: editParty.logo_url || '',
+          policy: editParty.policy || '',
+        })
+      } else {
+        form.reset({ name: '', logoUrl: '', policy: '' })
+      }
     }
-  }, [editParty, form])
+  }, [editParty, form, open])
 
   const onSubmit = async (values: PartyFormValues) => {
     const payload = {
@@ -99,7 +101,10 @@ export function PartyFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogTrigger asChild>
         <Button className='shadow-lg hover:shadow-xl transition-[box-shadow,colors] duration-300 gap-2 bg-blue-600 hover:bg-blue-700'>
           <Plus className='h-4 w-4' />

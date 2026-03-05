@@ -98,34 +98,37 @@ export function CandidateFormDialog({
   const updateMutation = useUpdateCandidateMutation()
   const isMutating = createMutation.isPending || updateMutation.isPending
 
-  // Populate form when editing
+  // Populate form when editing or opening
   useEffect(() => {
-    if (editCandidate) {
-      form.reset({
-        citizenId: editCandidate.citizenId || '',
-        firstName: editCandidate.firstName,
-        lastName: editCandidate.lastName,
-        number: editCandidate.number,
-        partyId: editCandidate.party?.id?.toString() || '',
-        provinceId: editCandidate.constituency?.province?.id?.toString() || '',
-        constituencyId: editCandidate.constituency?.id?.toString() || '',
-        imageUrl: editCandidate.imageUrl || '',
-        candidatePolicy: editCandidate.candidatePolicy || '',
-      })
-    } else {
-      form.reset({
-        citizenId: '',
-        firstName: '',
-        lastName: '',
-        number: '' as any,
-        partyId: '',
-        provinceId: '',
-        constituencyId: '',
-        imageUrl: '',
-        candidatePolicy: '',
-      })
+    if (open) {
+      if (editCandidate) {
+        form.reset({
+          citizenId: editCandidate.citizenId || '',
+          firstName: editCandidate.firstName,
+          lastName: editCandidate.lastName,
+          number: editCandidate.number,
+          partyId: editCandidate.party?.id?.toString() || '',
+          provinceId:
+            editCandidate.constituency?.province?.id?.toString() || '',
+          constituencyId: editCandidate.constituency?.id?.toString() || '',
+          imageUrl: editCandidate.imageUrl || '',
+          candidatePolicy: editCandidate.candidatePolicy || '',
+        })
+      } else {
+        form.reset({
+          citizenId: '',
+          firstName: '',
+          lastName: '',
+          number: '' as any,
+          partyId: '',
+          provinceId: '',
+          constituencyId: '',
+          imageUrl: '',
+          candidatePolicy: '',
+        })
+      }
     }
-  }, [editCandidate, form])
+  }, [editCandidate, form, open])
 
   // Reset constituency when province changes
   useEffect(() => {

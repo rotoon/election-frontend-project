@@ -13,7 +13,21 @@ export interface ApiConstituency {
     name: string
   }[]
   province?: {
-    id: number
+    id?: number
+    name: string
+  }
+  candidates?: ApiConstituencyCandidate[]
+}
+
+/** ผู้สมัครที่ embed อยู่ใน constituency response (มีแค่ name ของพรรค ไม่มี logoUrl) */
+export interface ApiConstituencyCandidate {
+  id: number
+  number: number
+  firstName: string
+  lastName: string
+  imageUrl: string
+  candidatePolicy?: string | null
+  party?: {
     name: string
   }
 }

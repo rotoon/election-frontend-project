@@ -4,6 +4,7 @@
  */
 
 import type { ApiCandidate, ApiConstituency, ApiParty } from '@/types/api'
+import type { ConstituencyCandidate } from '@/types/constituency'
 
 // Constituency transformation
 export interface TransformedConstituency {
@@ -12,20 +13,37 @@ export interface TransformedConstituency {
   provinceId: number
   zone_number: number
   districts?: string[]
+  districtIds?: number[]
   is_poll_open: boolean
+  candidateCount: number
+  candidates?: ConstituencyCandidate[]
 }
 
 export function transformConstituency(
   c: ApiConstituency,
 ): TransformedConstituency {
   const districts = c.districts?.map((d) => d.name)
+  const districtIds = c.districts?.map((d) => d.id)
+  const candidates: ConstituencyCandidate[] = (
+    c.candidates?.map((candidate) => ({
+      id: candidate.id,
+      number: candidate.number,
+      firstName: candidate.firstName,
+      lastName: candidate.lastName,
+      imageUrl: candidate.imageUrl,
+      partyName: candidate.party?.name,
+    })) || []
+  ).sort((a, b) => a.number - b.number)
   return {
     id: c.id,
     province: c.province?.name || `จังหวัด ${c.provinceId}`,
     provinceId: c.provinceId,
     zone_number: c.number,
     districts,
+    districtIds,
     is_poll_open: !c.isClosed,
+    candidateCount: candidates.length,
+    candidates,
   }
 }
 

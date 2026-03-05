@@ -6,16 +6,21 @@ import {
   useAdminConstituencies,
   useCreateConstituencyMutation,
   useDeleteConstituencyMutation,
+  useUpdateConstituencyMutation,
 } from '@/hooks/use-constituencies'
+import { Constituency } from '@/types/constituency'
 import { useProvinces } from '@/hooks/use-location'
 import { useURLPagination } from '@/hooks/use-url-pagination'
 import { Suspense, useState } from 'react'
 
 // Extracted Components
+import { CandidateListDialog } from '@/components/admin/constituencies/candidate-list-dialog'
+import { ConstituencyEditDialog } from '@/components/admin/constituencies/constituency-edit-dialog'
 import { ConstituencyFilters } from '@/components/admin/constituencies/constituency-filters'
 import { ConstituencyHeader } from '@/components/admin/constituencies/constituency-header'
 import { ConstituencyMobileList } from '@/components/admin/constituencies/constituency-mobile-list'
 import { ConstituencyTable } from '@/components/admin/constituencies/constituency-table'
+import { toast } from 'sonner'
 
 // --- Main Export ---
 export default function ManageConstituenciesPage() {
@@ -56,6 +61,7 @@ function ConstituenciesPageContent() {
 
   const createConstituency = useCreateConstituencyMutation()
   const deleteConstituency = useDeleteConstituencyMutation()
+  const updateConstituency = useUpdateConstituencyMutation()
 
   const constituencies = data?.constituencies || []
   const meta = data?.meta || {
@@ -66,12 +72,25 @@ function ConstituenciesPageContent() {
   }
 
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null)
+  const [editTarget, setEditTarget] = useState<Constituency | null>(null)
+  const [viewCandidatesTarget, setViewCandidatesTarget] =
+    useState<Constituency | null>(null)
 
   async function handleCreate(values: {
     province: string
     zoneNumber: number
+    districtIds: number[]
   }) {
     await createConstituency.mutateAsync(values)
+    refetch()
+  }
+
+  async function handleUpdate(values: {
+    id: number
+    zoneNumber: number
+    districtIds: number[]
+  }) {
+    await updateConstituency.mutateAsync(values)
     refetch()
   }
 
@@ -81,6 +100,7 @@ function ConstituenciesPageContent() {
       await deleteConstituency.mutateAsync(deleteTarget)
       refetch()
     } catch {
+      toast.error('ลบเขตเลือกตั้งไม่สำเร็จ')
       // Error handled in hook
     }
   }
@@ -103,14 +123,18 @@ function ConstituenciesPageContent() {
       <ConstituencyTable
         constituencies={constituencies}
         isLoading={isLoading}
+        onEdit={(c) => setEditTarget(c)}
         onDelete={(id) => setDeleteTarget(id)}
+        onViewCandidates={(c) => setViewCandidatesTarget(c)}
         isDeleting={deleteConstituency.isPending}
       />
 
       <ConstituencyMobileList
         constituencies={constituencies}
         isLoading={isLoading}
+        onEdit={(c) => setEditTarget(c)}
         onDelete={(id) => setDeleteTarget(id)}
+        onViewCandidates={(c) => setViewCandidatesTarget(c)}
       />
 
       <div className='pb-20'>
@@ -124,12 +148,27 @@ function ConstituenciesPageContent() {
         />
       </div>
 
+      <ConstituencyEditDialog
+        constituency={editTarget}
+        open={editTarget !== null}
+        onOpenChange={(open) => !open && setEditTarget(null)}
+        onUpdate={handleUpdate}
+        isUpdating={updateConstituency.isPending}
+      />
+
+      <CandidateListDialog
+        open={viewCandidatesTarget !== null}
+        onOpenChange={(open) => !open && setViewCandidatesTarget(null)}
+        constituencyLabel={`${viewCandidatesTarget?.province ?? ''} เขต ${viewCandidatesTarget?.zone_number ?? ''}`}
+        candidates={viewCandidatesTarget?.candidates ?? []}
+      />
+
       <ConfirmDialog
         open={deleteTarget !== null}
         onOpenChange={(open) => !open && setDeleteTarget(null)}
         title='ยืนยันลบเขตเลือกตั้ง'
         description='คุณต้องการลบเขตเลือกตั้งนี้ใช่หรือไม่? ข้อมูลผู้สมัครในเขตนี้จะหายไปด้วย และการดำเนินการนี้ไม่สามารถย้อนกลับได้'
-        confirmLabel='ลบข้อมูลถาวร'
+        confirmLabel='ลบข้อมูลเขต'
         onConfirm={handleDelete}
         isPending={deleteConstituency.isPending}
         variant='destructive'

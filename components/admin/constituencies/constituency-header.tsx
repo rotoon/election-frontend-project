@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Dialog,
   DialogContent,
@@ -26,8 +27,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { useAvailableDistricts } from '@/hooks/use-constituencies'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Hash, MapPin, Plus, RefreshCw } from 'lucide-react'
+import { Hash, Loader2, MapPin, Plus, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -35,7 +37,8 @@ import { z } from 'zod'
 // --- Zod Schema ---
 const constituencySchema = z.object({
   provinceId: z.string().min(1, 'กรุณาเลือกจังหวัด'),
-  zoneNumber: z.number().min(1, 'กรุณาระบุหมายเลขเขต'),
+  zoneNumber: z.coerce.number().min(1, 'กรุณาระบุหมายเลขเขต'),
+  districtIds: z.array(z.number()).min(1, 'กรุณาเลือกอำเภออย่างน้อย 1 รายการ'),
 })
 
 type ConstituencyFormValues = z.infer<typeof constituencySchema>
@@ -47,7 +50,11 @@ interface Province {
 
 interface ConstituencyHeaderProps {
   provinces: Province[] | undefined
-  onCreate: (values: { province: string; zoneNumber: number }) => Promise<void>
+  onCreate: (values: {
+    province: string
+    zoneNumber: number
+    districtIds: number[]
+  }) => Promise<void>
   isCreating: boolean
 }
 
@@ -59,21 +66,41 @@ export function ConstituencyHeader({
   const [isOpen, setIsOpen] = useState(false)
 
   const form = useForm<ConstituencyFormValues>({
-    resolver: zodResolver(constituencySchema),
-    defaultValues: { provinceId: '', zoneNumber: 0 },
+    resolver: zodResolver(constituencySchema) as any,
+    defaultValues: { provinceId: '', zoneNumber: '' as any, districtIds: [] },
   })
+
+  const selectedProvinceId = form.watch('provinceId')
+  const selectedDistrictIds = form.watch('districtIds')
+
+  const { data: availableDistricts, isLoading: isLoadingDistricts } =
+    useAvailableDistricts(selectedProvinceId || null)
 
   async function onSubmit(values: ConstituencyFormValues) {
     try {
       await onCreate({
         province: values.provinceId,
         zoneNumber: values.zoneNumber,
+        districtIds: values.districtIds,
       })
       setIsOpen(false)
       form.reset()
     } catch {
       // Error handled in parent/hook
     }
+  }
+
+  function handleSelectAll() {
+    if (!availableDistricts) return
+    form.setValue(
+      'districtIds',
+      availableDistricts.map((d) => d.id),
+      { shouldValidate: true },
+    )
+  }
+
+  function handleDeselectAll() {
+    form.setValue('districtIds', [], { shouldValidate: true })
   }
 
   return (
@@ -99,7 +126,7 @@ export function ConstituencyHeader({
             เพิ่มเขตเลือกตั้ง
           </Button>
         </DialogTrigger>
-        <DialogContent className='rounded-3xl border-none shadow-2xl'>
+        <DialogContent className='rounded-3xl border-none shadow-2xl max-h-[85vh] overflow-y-auto'>
           <DialogHeader className='space-y-3 pb-4'>
             <div className='w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center'>
               <MapPin className='w-6 h-6 text-primary' />
@@ -109,12 +136,15 @@ export function ConstituencyHeader({
                 เพิ่มเขตเลือกตั้งใหม่
               </DialogTitle>
               <DialogDescription className='text-muted-foreground font-medium'>
-                ระบุรายละเอียดจังหวัดและหมายเลขเขตที่คุณต้องการเพิ่มเข้าระบบ
+                ระบุรายละเอียดจังหวัด หมายเลขเขต และเลือกอำเภอที่อยู่ในเขตนี้
               </DialogDescription>
             </div>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-6'>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className='space-y-6'
+            >
               <FormField
                 control={form.control}
                 name='provinceId'
@@ -123,9 +153,16 @@ export function ConstituencyHeader({
                     <FormLabel className='text-xs font-black uppercase tracking-widest text-muted-foreground/80 pl-1'>
                       จังหวัด
                     </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={(val) => {
+                        field.onChange(val)
+                        // Reset districts when province changes
+                        form.setValue('districtIds', [])
+                      }}
+                      value={field.value}
+                    >
                       <FormControl>
-                        <SelectTrigger className='h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-primary/20 transition-all'>
+                        <SelectTrigger className='w-full h-12 rounded-xl bg-slate-50 border-slate-200 focus:ring-primary/20 transition-all'>
                           <SelectValue placeholder='เลือกจังหวัด' />
                         </SelectTrigger>
                       </FormControl>
@@ -159,11 +196,9 @@ export function ConstituencyHeader({
                         <Input
                           type='number'
                           placeholder='ระบุเป็นตัวเลข (เช่น 1, 2, 3)'
-                          className='h-12 pl-11 rounded-xl bg-slate-50 border-slate-200 focus:ring-primary/20 transition-all font-bold'
+                          className='pl-11 rounded-xl bg-slate-50 border-slate-200 focus:ring-primary/20 transition-all font-bold'
                           {...field}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value) || 0)
-                          }
+                          onChange={(e) => field.onChange(e.target.value)}
                         />
                       </div>
                     </FormControl>
@@ -171,6 +206,114 @@ export function ConstituencyHeader({
                   </FormItem>
                 )}
               />
+
+              {/* District Selection */}
+              <FormField
+                control={form.control}
+                name='districtIds'
+                render={() => (
+                  <FormItem className='space-y-1.5'>
+                    <div className='flex items-center justify-between'>
+                      <FormLabel className='text-xs font-black uppercase tracking-widest text-muted-foreground/80 pl-1'>
+                        อำเภอในเขตนี้
+                      </FormLabel>
+                      {availableDistricts && availableDistricts.length > 0 && (
+                        <div className='flex gap-2'>
+                          <button
+                            type='button'
+                            onClick={handleSelectAll}
+                            className='cursor-pointer text-xs font-bold text-primary hover:underline'
+                          >
+                            เลือกทั้งหมด
+                          </button>
+                          <span className='text-muted-foreground'>|</span>
+                          <button
+                            type='button'
+                            onClick={handleDeselectAll}
+                            className='cursor-pointer text-xs font-bold text-muted-foreground hover:underline'
+                          >
+                            ยกเลิกทั้งหมด
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {!selectedProvinceId ? (
+                      <p className='text-sm text-muted-foreground bg-slate-50 rounded-xl p-4 text-center'>
+                        กรุณาเลือกจังหวัดก่อน
+                      </p>
+                    ) : isLoadingDistricts ? (
+                      <div className='flex items-center justify-center gap-2 bg-slate-50 rounded-xl p-4'>
+                        <Loader2 className='w-4 h-4 animate-spin text-muted-foreground' />
+                        <span className='text-sm text-muted-foreground'>
+                          กำลังโหลดอำเภอ...
+                        </span>
+                      </div>
+                    ) : !availableDistricts ||
+                      availableDistricts.length === 0 ? (
+                      <p className='text-sm text-amber-600 bg-amber-50 rounded-xl p-4 text-center font-medium'>
+                        ไม่มีอำเภอว่างในจังหวัดนี้
+                      </p>
+                    ) : (
+                      <div className='grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-4 max-h-48 overflow-y-auto'>
+                        {availableDistricts.map((district) => {
+                          const isChecked = selectedDistrictIds.includes(
+                            district.id,
+                          )
+                          return (
+                            <label
+                              key={district.id}
+                              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 cursor-pointer transition-colors ${
+                                isChecked
+                                  ? 'bg-primary/10 ring-1 ring-primary/30'
+                                  : 'hover:bg-white'
+                              }`}
+                            >
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={(checked) => {
+                                  const current = form.getValues('districtIds')
+                                  if (checked) {
+                                    form.setValue(
+                                      'districtIds',
+                                      [...current, district.id],
+                                      { shouldValidate: true },
+                                    )
+                                  } else {
+                                    form.setValue(
+                                      'districtIds',
+                                      current.filter(
+                                        (id) => id !== district.id,
+                                      ),
+                                      { shouldValidate: true },
+                                    )
+                                  }
+                                }}
+                              />
+                              <span className='text-sm font-medium leading-none'>
+                                {district.name}
+                              </span>
+                            </label>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {selectedDistrictIds.length > 0 && (
+                      <p className='text-xs text-muted-foreground pl-1'>
+                        เลือกแล้ว{' '}
+                        <span className='font-bold text-primary'>
+                          {selectedDistrictIds.length}
+                        </span>{' '}
+                        อำเภอ
+                      </p>
+                    )}
+
+                    <FormMessage className='text-xs font-bold' />
+                  </FormItem>
+                )}
+              />
+
               <DialogFooter className='pt-2'>
                 <Button
                   type='submit'

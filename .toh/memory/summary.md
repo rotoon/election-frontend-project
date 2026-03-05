@@ -17,6 +17,7 @@ Election Frontend Project - A web application for managing and displaying electi
 
 - Multi-role Authentication & Selection Portal
 - Dashboard & Data Visualization
+- Constituency & Candidate Management (CRUD, Filters, Relations)
 - Form Validation
 
 ---

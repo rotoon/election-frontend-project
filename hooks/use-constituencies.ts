@@ -1,11 +1,15 @@
 import api from '@/lib/api'
 import { getApiErrorMessage } from '@/lib/error'
 import { transformConstituencies } from '@/lib/transforms'
-import { Constituency, ManageConstituenciesResult } from '@/types/constituency'
+import {
+  AvailableDistrict,
+  Constituency,
+  ManageConstituenciesResult,
+} from '@/types/constituency'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-export type { Constituency } from '@/types/constituency'
+export type { AvailableDistrict, Constituency } from '@/types/constituency'
 
 // Hook to fetch All Constituencies (Public / Admin / EC)
 export function useConstituencies(provinceId?: string | null) {
@@ -194,13 +198,32 @@ export function useCloseAllPollsMutation() {
   })
 }
 
+// Hook to fetch available (unassigned) districts for a province
+export function useAvailableDistricts(provinceId?: string | null) {
+  return useQuery<AvailableDistrict[]>({
+    queryKey: ['available-districts', provinceId],
+    queryFn: async () => {
+      const { data } = await api.get(
+        `/admin/constituencies/${provinceId}/available-districts`,
+      )
+      return (data.data || []) as AvailableDistrict[]
+    },
+    enabled: !!provinceId,
+  })
+}
+
 export function useCreateConstituencyMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async (payload: { province: string; zoneNumber: number }) => {
+    mutationFn: async (payload: {
+      province: string
+      zoneNumber: number
+      districtIds: number[]
+    }) => {
       await api.post('/admin/constituencies', {
         number: payload.zoneNumber,
         provinceId: parseInt(payload.province),
+        districtIds: payload.districtIds,
       })
     },
     onSuccess: () => {
@@ -208,6 +231,7 @@ export function useCreateConstituencyMutation() {
       queryClient.invalidateQueries({ queryKey: ['constituencies'] })
       queryClient.invalidateQueries({ queryKey: ['admin-constituencies'] })
       queryClient.invalidateQueries({ queryKey: ['manage-constituencies'] })
+      queryClient.invalidateQueries({ queryKey: ['available-districts'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
@@ -228,11 +252,40 @@ export function useDeleteConstituencyMutation() {
       queryClient.invalidateQueries({ queryKey: ['constituencies'] })
       queryClient.invalidateQueries({ queryKey: ['admin-constituencies'] })
       queryClient.invalidateQueries({ queryKey: ['manage-constituencies'] })
+      queryClient.invalidateQueries({ queryKey: ['available-districts'] })
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     },
     onError: (error: unknown) => {
       toast.error(getApiErrorMessage(error, 'ลบไม่สำเร็จ'))
+    },
+  })
+}
+
+export function useUpdateConstituencyMutation() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (payload: {
+      id: number
+      zoneNumber: number
+      districtIds: number[]
+    }) => {
+      await api.put(`/admin/constituencies/${payload.id}`, {
+        number: payload.zoneNumber,
+        districtIds: payload.districtIds,
+      })
+    },
+    onSuccess: () => {
+      toast.success('แก้ไขเขตเลือกตั้งสำเร็จ')
+      queryClient.invalidateQueries({ queryKey: ['constituencies'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-constituencies'] })
+      queryClient.invalidateQueries({ queryKey: ['manage-constituencies'] })
+      queryClient.invalidateQueries({ queryKey: ['available-districts'] })
+      queryClient.invalidateQueries({ queryKey: ['admin-stats'] })
+      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
+    },
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, 'แก้ไขเขตเลือกตั้งไม่สำเร็จ'))
     },
   })
 }

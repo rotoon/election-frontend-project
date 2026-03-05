@@ -2,7 +2,7 @@
 
 ## Current Focus
 
-- EC Module Refactoring completed.
+- Constituency CRUD with district selection completed (Create + Edit).
 
 ## Just Completed
 
@@ -17,6 +17,11 @@
 - Added Province Filter dropdown to Admin Users management page.
 - Updated Constituency Toggle API hooks → new `/ec/constituencies/...` endpoints (toggle, open-all, close-all).
 - Added `updatedAt` column ("แก้ไขล่าสุด") to candidates table with relative time display, default sort by `updatedAt` desc.
+- Added "จำนวนผู้สมัคร" column to /admin/constituencies (clickable) → opens `CandidateListDialog` showing full list with name, party, and number.
+- Updated API types + transformers to pass `candidates[]` from constituency API response.
+- **Redesigned Candidate List**: Switched to a premium card-based layout with interactive effects.
+- **Constituency Edit**: Implemented full edit dialog with district management and validation.
+- **Numeric Input UX Fix**: Resolved input clearing issues and set default values to empty strings instead of `0`.
 
 ## Next Steps
 

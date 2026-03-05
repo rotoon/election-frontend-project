@@ -48,7 +48,7 @@ const candidateSchema = z.object({
     .regex(/^\d+$/, 'ต้องเป็นตัวเลขเท่านั้น'),
   firstName: z.string().min(1, 'กรุณาระบุชื่อ'),
   lastName: z.string().min(1, 'กรุณาระบุนามสกุล'),
-  number: z.number().min(1, 'เบอร์ผู้สมัครต้องมากกว่า 0'),
+  number: z.coerce.number().min(1, 'เบอร์ผู้สมัครต้องมากกว่า 0'),
   partyId: z.string().min(1, 'กรุณาเลือกพรรค'),
   provinceId: z.string().min(1, 'กรุณาเลือกจังหวัด'),
   constituencyId: z.string().min(1, 'กรุณาเลือกเขตเลือกตั้ง'),
@@ -72,12 +72,12 @@ export function CandidateFormDialog({
   const isEdit = !!editCandidate
 
   const form = useForm<CandidateFormValues>({
-    resolver: zodResolver(candidateSchema),
+    resolver: zodResolver(candidateSchema) as any,
     defaultValues: {
       citizenId: '',
       firstName: '',
       lastName: '',
-      number: 0,
+      number: '' as any,
       partyId: '',
       provinceId: '',
       constituencyId: '',
@@ -117,7 +117,7 @@ export function CandidateFormDialog({
         citizenId: '',
         firstName: '',
         lastName: '',
-        number: 0,
+        number: '' as any,
         partyId: '',
         provinceId: '',
         constituencyId: '',
@@ -173,7 +173,10 @@ export function CandidateFormDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className='sm:max-w-[600px] rounded-xl border-none shadow-2xl flex flex-col max-h-[96vh] p-0'>
         <DialogHeader className='bg-slate-50 p-6 border-b shrink-0'>
           <DialogTitle className='text-xl'>
@@ -280,7 +283,10 @@ export function CandidateFormDialog({
                         </FormControl>
                         <SelectContent className='max-h-[250px]'>
                           {provinces?.map((pv) => (
-                            <SelectItem key={pv.id} value={pv.id.toString()}>
+                            <SelectItem
+                              key={pv.id}
+                              value={pv.id.toString()}
+                            >
                               {pv.name}
                             </SelectItem>
                           ))}
@@ -316,7 +322,10 @@ export function CandidateFormDialog({
                         </FormControl>
                         <SelectContent className='max-h-[200px]'>
                           {constituencies?.map((c) => (
-                            <SelectItem key={c.id} value={c.id.toString()}>
+                            <SelectItem
+                              key={c.id}
+                              value={c.id.toString()}
+                            >
                               เขต {c.zone_number}
                             </SelectItem>
                           ))}
@@ -343,9 +352,7 @@ export function CandidateFormDialog({
                           type='number'
                           min={1}
                           value={field.value || ''}
-                          onChange={(e) =>
-                            field.onChange(parseInt(e.target.value) || 0)
-                          }
+                          onChange={(e) => field.onChange(e.target.value)}
                           placeholder='เช่น 1'
                           className='bg-slate-50/50 focus:bg-white transition-colors'
                         />
@@ -375,7 +382,10 @@ export function CandidateFormDialog({
                         </FormControl>
                         <SelectContent>
                           {parties?.map((p) => (
-                            <SelectItem key={p.id} value={p.id.toString()}>
+                            <SelectItem
+                              key={p.id}
+                              value={p.id.toString()}
+                            >
                               {p.name}
                             </SelectItem>
                           ))}

@@ -10,27 +10,24 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { RefreshCw, Search, Trash2 } from 'lucide-react'
-
-interface Constituency {
-  id: number
-  province: string
-  zone_number: number
-  districts?: string[]
-  is_poll_open: boolean
-}
+import { Constituency } from '@/types/constituency'
+import { RefreshCw, Search, Pencil, Trash2 } from 'lucide-react'
 
 interface ConstituencyTableProps {
   constituencies: Constituency[]
   isLoading: boolean
+  onEdit: (c: Constituency) => void
   onDelete: (id: number) => void
+  onViewCandidates: (c: Constituency) => void
   isDeleting: boolean
 }
 
 export function ConstituencyTable({
   constituencies,
   isLoading,
+  onEdit,
   onDelete,
+  onViewCandidates,
   isDeleting,
 }: ConstituencyTableProps) {
   return (
@@ -48,6 +45,9 @@ export function ConstituencyTable({
               พื้นที่ / เขต
             </TableHead>
             <TableHead className='h-14 font-bold text-slate-900 text-center px-4'>
+              จำนวนผู้สมัคร
+            </TableHead>
+            <TableHead className='h-14 font-bold text-slate-900 text-center px-4'>
               สถานะระบบลงคะแนน
             </TableHead>
             <TableHead className='h-14 font-bold text-slate-900 text-right pr-8'>
@@ -59,7 +59,7 @@ export function ConstituencyTable({
           {isLoading ? (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className='h-40 text-center'
               >
                 <div className='flex flex-col items-center justify-center gap-3'>
@@ -73,7 +73,7 @@ export function ConstituencyTable({
           ) : constituencies.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={5}
+                colSpan={6}
                 className='h-40 text-center'
               >
                 <div className='flex flex-col items-center justify-center gap-2'>
@@ -120,6 +120,16 @@ export function ConstituencyTable({
                     )}
                   </div>
                 </TableCell>
+                <TableCell className='text-center px-4'>
+                  <button
+                    type='button'
+                    onClick={() => onViewCandidates(c)}
+                    title='ดูผู้สมัครทั้งหมด'
+                    className='inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 font-bold text-slate-700 shadow-inner hover:bg-primary/10 hover:text-primary hover:scale-110 active:scale-95 transition-all cursor-pointer'
+                  >
+                    {c.candidateCount}
+                  </button>
+                </TableCell>
                 <TableCell className='text-center px-4 uppercase tracking-tighter'>
                   {c.is_poll_open ? (
                     <Badge className='bg-green-500 text-white border-0 shadow-lg shadow-green-100 rounded-lg font-black px-3 py-1 gap-1.5'>
@@ -137,6 +147,14 @@ export function ConstituencyTable({
                 </TableCell>
                 <TableCell className='text-right pr-8'>
                   <div className='flex justify-end gap-2'>
+                    <Button
+                      variant='ghost'
+                      size='icon'
+                      className='h-10 w-10 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-all active:scale-90 group/edit'
+                      onClick={() => onEdit(c)}
+                    >
+                      <Pencil className='h-4 w-4 text-slate-400 group-hover/edit:text-blue-500 group-hover/edit:scale-110 transition-all' />
+                    </Button>
                     <Button
                       variant='ghost'
                       size='icon'

@@ -2,26 +2,23 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { ShieldCheck, ShieldEllipsis, Trash2 } from 'lucide-react'
-
-interface Constituency {
-  id: number
-  province: string
-  zone_number: number
-  districts?: string[]
-  is_poll_open: boolean
-}
+import { Constituency } from '@/types/constituency'
+import { Pencil, ShieldCheck, ShieldEllipsis, Trash2 } from 'lucide-react'
 
 interface ConstituencyMobileListProps {
   constituencies: Constituency[]
   isLoading: boolean
+  onEdit: (c: Constituency) => void
   onDelete: (id: number) => void
+  onViewCandidates: (c: Constituency) => void
 }
 
 export function ConstituencyMobileList({
   constituencies,
   isLoading,
+  onEdit,
   onDelete,
+  onViewCandidates,
 }: ConstituencyMobileListProps) {
   if (isLoading) {
     return (
@@ -87,18 +84,48 @@ export function ConstituencyMobileList({
             </div>
           </div>
 
+          <div className='relative z-10'>
+            <div className='text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2'>
+              ผู้สมัครในเขตนี้
+            </div>
+            <button
+              type='button'
+              onClick={() => onViewCandidates(c)}
+              className='flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-primary/10 hover:border-primary/20 active:scale-95 transition-all cursor-pointer group/btn'
+            >
+              <span className='w-2 h-2 rounded-full bg-primary group-hover/btn:bg-primary' />
+              <span className='font-black text-slate-700 group-hover/btn:text-primary'>
+                {c.candidateCount}
+              </span>
+              <span className='text-xs font-bold text-slate-400'>คน</span>
+              <span className='text-xs text-primary/60 ml-1 group-hover/btn:text-primary'>
+                &rsaquo;
+              </span>
+            </button>
+          </div>
+
           <div className='flex items-center justify-between pt-4 border-t border-slate-50 relative z-10'>
             <p className='font-black text-slate-700 bg-slate-50 px-4 py-2 rounded-2xl'>
               เขตเลือกตั้งที่ {c.zone_number}
             </p>
-            <Button
-              variant='ghost'
-              size='icon'
-              className='h-12 w-12 rounded-2xl bg-red-50 text-red-600'
-              onClick={() => onDelete(c.id)}
-            >
-              <Trash2 className='w-5 h-5' />
-            </Button>
+            <div className='flex items-center gap-2'>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='h-12 w-12 rounded-2xl bg-blue-50 text-blue-600'
+                onClick={() => onEdit(c)}
+              >
+                <Pencil className='w-5 h-5' />
+              </Button>
+              <Button
+                variant='ghost'
+                size='icon'
+                className='h-12 w-12 rounded-2xl bg-red-50 text-red-600'
+                onClick={() => onDelete(c.id)}
+              >
+                <Trash2 className='w-5 h-5' />
+              </Button>
+            </div>
           </div>
         </div>
       ))}

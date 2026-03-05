@@ -44,7 +44,10 @@ function CandidatesPageSkeleton() {
       </div>
       <div className='border rounded-md p-4 space-y-2'>
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className='h-12 bg-slate-100 rounded animate-pulse' />
+          <div
+            key={i}
+            className='h-12 bg-slate-100 rounded animate-pulse'
+          />
         ))}
       </div>
     </div>
@@ -69,7 +72,7 @@ function CandidatesPageContent() {
 
   // Derived filter values
   const sortBy =
-    (state.filters.sortBy as 'number' | 'firstName' | 'lastName') || 'firstName'
+    (state.filters.sortBy as 'number' | 'firstName' | 'lastName') || ''
   const order = (state.filters.order as 'asc' | 'desc') || 'asc'
   const filterParty = state.filters.party || 'all'
   const filterProvince = state.filters.province || 'all'

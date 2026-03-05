@@ -5,6 +5,7 @@ export interface Constituency {
   province: string
   provinceId: number
   zone_number: number
+  districts?: string[]
   is_poll_open: boolean
 }
 

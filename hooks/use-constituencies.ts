@@ -150,8 +150,8 @@ export function useConstituencyStatus(constituencyId?: string | number | null) {
 export function useTogglePollMutation() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: async ({ id, isOpen }: { id: number; isOpen: boolean }) => {
-      await api.patch(`/ec/control/${id}`, { isPollOpen: isOpen })
+    mutationFn: async (id: number) => {
+      await api.post(`/ec/constituencies/${id}/toggle`)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['constituencies'] })
@@ -168,7 +168,7 @@ export function useOpenAllPollsMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async () => {
-      await api.post('/ec/control/open-all')
+      await api.post('/ec/constituencies/open-all')
     },
     onSuccess: () => {
       toast.success('เปิดหีบเลือกตั้งทั้งหมดแล้ว')
@@ -183,7 +183,7 @@ export function useCloseAllPollsMutation() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: async () => {
-      await api.post('/ec/control/close-all')
+      await api.post('/ec/constituencies/close-all')
     },
     onSuccess: () => {
       toast.success('ปิดหีบเลือกตั้งทั้งหมดแล้ว')

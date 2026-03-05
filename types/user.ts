@@ -25,6 +25,8 @@ export interface AdminUserResponse {
   lastName: string
   address?: string
   province?: { id: number; name: string }
+  district?: { id: number; name: string }
+  constituency?: { id: number; number: number }
   provinceId?: number
   districtId?: number
   constituencyId?: number

@@ -14,7 +14,7 @@ interface Constituency {
 interface ControlMobileListProps {
   constituencies: Constituency[]
   isLoading: boolean
-  onToggle: (id: number, currentStatus: boolean) => void
+  onToggle: (id: number) => void
   isToggling: boolean
 }
 
@@ -82,7 +82,7 @@ export function ControlMobileList({
           <div className='relative z-10'>
             <Button
               size='lg'
-              onClick={() => onToggle(c.id, c.is_poll_open)}
+              onClick={() => onToggle(c.id)}
               disabled={isToggling}
               variant='ghost'
               className={`h-10 px-4 rounded-xl font-bold transition-all w-full ${

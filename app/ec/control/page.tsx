@@ -82,8 +82,8 @@ function ControlPageContent() {
 
   const [confirmToggleAll, setConfirmToggleAll] = useState<boolean | null>(null)
 
-  async function togglePoll(id: number, currentStatus: boolean) {
-    togglePollMutation.mutate({ id, isOpen: !currentStatus })
+  async function togglePoll(id: number) {
+    togglePollMutation.mutate(id)
   }
 
   async function toggleAll(open: boolean) {

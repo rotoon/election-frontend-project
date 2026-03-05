@@ -15,6 +15,7 @@
 - Verified with `tsc --noEmit` (0 errors) and `npm run build` (14/14 routes).
 - Fixed Province Filter bug by implementing `setFilters` in `useURLPagination` to handle multipart filter updates atomically.
 - Added Province Filter dropdown to Admin Users management page.
+- Updated Constituency Toggle API hooks → new `/ec/constituencies/...` endpoints (toggle, open-all, close-all).
 
 ## Next Steps
 
@@ -24,4 +25,4 @@
 
 ---
 
-_Last updated: 2026-03-03_
+_Last updated: 2026-03-05_

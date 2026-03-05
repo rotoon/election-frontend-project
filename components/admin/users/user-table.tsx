@@ -49,8 +49,14 @@ export function UserTable({
             <TableHead className='h-14 font-bold text-slate-900 px-4'>
               ที่อยู่
             </TableHead>
-            <TableHead className='h-14 font-bold text-slate-900 px-4 whitespace-nowrap'>
+            <TableHead className='h-14 font-bold text-slate-900 px-4'>
+              อำเภอ/เขต
+            </TableHead>
+            <TableHead className='h-14 font-bold text-slate-900 px-4'>
               จังหวัด
+            </TableHead>
+            <TableHead className='h-14 font-bold text-slate-900 px-4 text-center'>
+              เขตเลือกตั้ง
             </TableHead>
             <TableHead className='h-14 font-bold text-slate-900 px-4'>
               เลขบัตรประจำตัวประชาชน
@@ -67,7 +73,7 @@ export function UserTable({
           {isLoading ? (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={8}
                 className='h-40 text-center'
               >
                 <div className='flex flex-col items-center justify-center gap-3'>
@@ -81,7 +87,7 @@ export function UserTable({
           ) : users.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={6}
+                colSpan={8}
                 className='h-40 text-center'
               >
                 <div className='flex flex-col items-center justify-center gap-2'>
@@ -113,7 +119,15 @@ export function UserTable({
                     {u.address || 'ไม่มีข้อมูลที่อยู่'}
                   </TableCell>
                   <TableCell className='px-4 font-bold text-slate-600'>
+                    {u.district?.name || '-'}
+                  </TableCell>
+                  <TableCell className='px-4 font-bold text-slate-600'>
                     {u.province?.name || '-'}
+                  </TableCell>
+                  <TableCell className='px-4 font-bold text-slate-600 text-center'>
+                    {u.constituency?.number
+                      ? `เขต ${u.constituency.number}`
+                      : '-'}
                   </TableCell>
                   <TableCell className='px-4 font-mono font-bold text-slate-600'>
                     {formatCitizenId(u.citizenId)}

@@ -66,6 +66,8 @@ export function useManageUsers(params: {
           lastName: u.lastName,
           address: u.address,
           province: u.province,
+          district: u.district,
+          constituency: u.constituency,
           roles: roles.length > 0 ? roles : ['ROLE_VOTER'],
           createdAt: u.createdAt,
         } as User

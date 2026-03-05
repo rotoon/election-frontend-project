@@ -22,7 +22,7 @@ interface Constituency {
 interface ControlTableProps {
   constituencies: Constituency[]
   isLoading: boolean
-  onToggle: (id: number, currentStatus: boolean) => void
+  onToggle: (id: number) => void
   isToggling: boolean
 }
 
@@ -54,7 +54,10 @@ export function ControlTable({
         <TableBody>
           {isLoading ? (
             <TableRow>
-              <TableCell colSpan={4} className='h-40 text-center'>
+              <TableCell
+                colSpan={4}
+                className='h-40 text-center'
+              >
                 <div className='flex flex-col items-center justify-center gap-3'>
                   <RefreshCw className='h-8 w-8 text-primary animate-spin opacity-20' />
                   <span className='text-sm font-medium text-muted-foreground'>
@@ -65,7 +68,10 @@ export function ControlTable({
             </TableRow>
           ) : constituencies.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={4} className='h-40 text-center'>
+              <TableCell
+                colSpan={4}
+                className='h-40 text-center'
+              >
                 <div className='flex flex-col items-center justify-center gap-2'>
                   <div className='bg-slate-100 p-3 rounded-full'>
                     <RefreshCw className='h-6 w-6 text-slate-400' />
@@ -118,7 +124,7 @@ export function ControlTable({
                 <TableCell className='text-right pr-8'>
                   <Button
                     size='sm'
-                    onClick={() => onToggle(c.id, c.is_poll_open)}
+                    onClick={() => onToggle(c.id)}
                     disabled={isToggling}
                     variant='ghost'
                     className={`h-10 px-4 rounded-xl font-bold transition-all ${

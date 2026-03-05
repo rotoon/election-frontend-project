@@ -8,6 +8,10 @@ export interface ApiConstituency {
   number: number
   provinceId: number
   isClosed: boolean
+  districts?: {
+    id: number
+    name: string
+  }[]
   province?: {
     id: number
     name: string

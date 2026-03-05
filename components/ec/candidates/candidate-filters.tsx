@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ArrowUpDown, Filter, Search } from 'lucide-react'
+import { ArrowUpDown, Filter, Search, X } from 'lucide-react'
 
 interface CandidateFiltersProps {
   searchInput: string
@@ -158,6 +158,30 @@ export function CandidateFilters({
         >
           <ArrowUpDown className='h-4 w-4' />
         </Button>
+
+        {/* Clear Filter Button */}
+        {(searchInput ||
+          filterParty !== 'all' ||
+          filterProvince !== 'all' ||
+          filterConstituency !== 'all') && (
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={() => {
+              setSearchInput('')
+              actions.setFilters({
+                party: 'all',
+                province: 'all',
+                constituency: 'all',
+                search: '',
+              })
+            }}
+            className='text-slate-500 hover:text-red-500 hover:bg-red-50 transition-colors gap-2 px-3'
+          >
+            <X className='h-4 w-4' />
+            <span className='hidden lg:inline'>ล้างตัวเลือก</span>
+          </Button>
+        )}
       </div>
     </div>
   )

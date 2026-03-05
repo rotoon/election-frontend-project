@@ -8,6 +8,7 @@ interface Constituency {
   id: number
   province: string
   zone_number: number
+  districts?: string[]
   is_poll_open: boolean
 }
 
@@ -63,6 +64,27 @@ export function ConstituencyMobileList({
                 <ShieldEllipsis className='w-4 h-4 mr-2' /> CLOSED
               </Badge>
             )}
+          </div>
+
+          <div className='relative z-10'>
+            <div className='text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2'>
+              พื้นที่ / เขต
+            </div>
+            <div className='flex flex-wrap gap-1.5'>
+              {c.districts && c.districts.length > 0 ? (
+                c.districts.map((district, idx) => (
+                  <Badge
+                    key={`${c.id}-${idx}`}
+                    variant='outline'
+                    className='bg-white border-slate-200 text-slate-700 font-bold text-xs px-3 py-1 border-[1px] shadow-sm'
+                  >
+                    {district}
+                  </Badge>
+                ))
+              ) : (
+                <span className='text-slate-300 text-xs'>-</span>
+              )}
+            </div>
           </div>
 
           <div className='flex items-center justify-between pt-4 border-t border-slate-50 relative z-10'>

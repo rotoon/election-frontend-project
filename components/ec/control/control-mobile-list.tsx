@@ -2,20 +2,15 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Constituency, ConstituencyCandidate } from '@/types/constituency'
 import { Lock, ShieldAlert, ShieldCheck, Unlock } from 'lucide-react'
-
-interface Constituency {
-  id: number
-  province: string
-  zone_number: number
-  is_poll_open: boolean
-}
 
 interface ControlMobileListProps {
   constituencies: Constituency[]
   isLoading: boolean
   onToggle: (id: number) => void
   isToggling: boolean
+  onViewCandidates?: (c: Constituency) => void
 }
 
 export function ControlMobileList({
@@ -23,6 +18,7 @@ export function ControlMobileList({
   isLoading,
   onToggle,
   isToggling,
+  onViewCandidates,
 }: ControlMobileListProps) {
   if (isLoading) {
     return (
@@ -77,6 +73,26 @@ export function ControlMobileList({
                 <ShieldAlert className='w-3.5 h-3.5 mr-1' /> CLOSED
               </Badge>
             )}
+          </div>
+
+          <div className='relative z-10 flex flex-col gap-2'>
+            <div className='text-[10px] font-black uppercase tracking-widest text-muted-foreground/60'>
+              ผู้สมัครในเขตนี้
+            </div>
+            <button
+              type='button'
+              onClick={() => onViewCandidates?.(c)}
+              className='flex items-center gap-2 px-4 py-1.5 rounded-xl bg-slate-50 border border-slate-100 hover:bg-primary/10 hover:border-primary/20 active:scale-95 transition-all cursor-pointer group/btn w-fit'
+            >
+              <span className='w-2 h-2 rounded-full bg-primary group-hover/btn:bg-primary' />
+              <span className='font-black text-slate-700 group-hover/btn:text-primary'>
+                {c.candidateCount ?? 0}
+              </span>
+              <span className='text-xs font-bold text-slate-400'>คน</span>
+              <span className='text-xs text-primary/60 ml-1 group-hover/btn:text-primary'>
+                &rsaquo;
+              </span>
+            </button>
           </div>
 
           <div className='relative z-10'>

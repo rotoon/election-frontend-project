@@ -10,20 +10,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Constituency, ConstituencyCandidate } from '@/types/constituency'
 import { Lock, RefreshCw, Unlock, XCircle } from 'lucide-react'
-
-interface Constituency {
-  id: number
-  province: string
-  zone_number: number
-  is_poll_open: boolean
-}
 
 interface ControlTableProps {
   constituencies: Constituency[]
   isLoading: boolean
   onToggle: (id: number) => void
   isToggling: boolean
+  onViewCandidates?: (c: Constituency) => void
 }
 
 export function ControlTable({
@@ -31,6 +26,7 @@ export function ControlTable({
   isLoading,
   onToggle,
   isToggling,
+  onViewCandidates,
 }: ControlTableProps) {
   return (
     <div className='border border-slate-200/60 rounded-2xl bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hidden md:block group'>
@@ -43,7 +39,10 @@ export function ControlTable({
             <TableHead className='h-14 font-bold text-slate-900 px-4'>
               เขตพื้นที่
             </TableHead>
-            <TableHead className='h-14 font-bold text-slate-900 text-center uppercase tracking-wider text-[11px] px-4'>
+            <TableHead className='h-14 font-bold text-slate-900 text-center px-4'>
+              จำนวนผู้สมัคร
+            </TableHead>
+            <TableHead className='h-14 font-bold text-slate-900 text-center'>
               สถานะปัจจุบัน
             </TableHead>
             <TableHead className='h-14 font-bold text-slate-900 text-right pr-8'>
@@ -100,6 +99,16 @@ export function ControlTable({
                       เขตเลือกตั้งที่ {c.zone_number}
                     </span>
                   </div>
+                </TableCell>
+                <TableCell className='text-center px-4'>
+                  <button
+                    type='button'
+                    onClick={() => onViewCandidates?.(c)}
+                    title='ดูผู้สมัครทั้งหมด'
+                    className='inline-flex items-center justify-center w-10 h-10 rounded-full bg-slate-100 font-bold text-slate-700 shadow-inner hover:bg-primary/10 hover:text-primary hover:scale-110 active:scale-95 transition-all cursor-pointer'
+                  >
+                    {c.candidateCount || 0}
+                  </button>
                 </TableCell>
                 <TableCell className='text-center px-4'>
                   <div className='flex justify-center'>

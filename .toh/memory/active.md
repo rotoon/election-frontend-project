@@ -24,6 +24,7 @@
 - **Numeric Input UX Fix**: Resolved input clearing issues and set default values to empty strings instead of `0`.
 - **Candidate Form Reset UX Fix**: Fixed issue where candidate form kept old data when closing and reopening the modal.
 - **Party Form Reset UX Fix**: Applied the same fix to `PartyFormDialog`.
+- **EC Control Candidate Count**: Added a "Number of Candidates" column to the `ec/control` page (desktop and mobile target modes), which opens a dialog to view candidates.
 
 ## Next Steps
 

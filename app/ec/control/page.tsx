@@ -10,6 +10,7 @@ import {
 } from '@/hooks/use-constituencies'
 import { useProvinces } from '@/hooks/use-location'
 import { useURLPagination } from '@/hooks/use-url-pagination'
+import { Constituency } from '@/types/constituency'
 import { Suspense, useState } from 'react'
 
 // Extracted Components
@@ -17,6 +18,7 @@ import { ControlFilters } from '@/components/ec/control/control-filters'
 import { ControlHeader } from '@/components/ec/control/control-header'
 import { ControlMobileList } from '@/components/ec/control/control-mobile-list'
 import { ControlTable } from '@/components/ec/control/control-table'
+import { CandidateListDialog } from '@/components/admin/constituencies/candidate-list-dialog'
 
 export default function ElectionControlPage() {
   return (
@@ -81,6 +83,8 @@ function ControlPageContent() {
   }
 
   const [confirmToggleAll, setConfirmToggleAll] = useState<boolean | null>(null)
+  const [viewCandidatesTarget, setViewCandidatesTarget] =
+    useState<Constituency | null>(null)
 
   async function togglePoll(id: number) {
     togglePollMutation.mutate(id)
@@ -115,6 +119,7 @@ function ControlPageContent() {
         isLoading={isLoading}
         onToggle={togglePoll}
         isToggling={togglePollMutation.isPending}
+        onViewCandidates={(c) => setViewCandidatesTarget(c)}
       />
 
       <ControlMobileList
@@ -122,6 +127,7 @@ function ControlPageContent() {
         isLoading={isLoading}
         onToggle={togglePoll}
         isToggling={togglePollMutation.isPending}
+        onViewCandidates={(c) => setViewCandidatesTarget(c)}
       />
 
       <div className='pb-20'>
@@ -148,6 +154,13 @@ function ControlPageContent() {
           if (confirmToggleAll !== null) await toggleAll(confirmToggleAll)
         }}
         isPending={openAllMutation.isPending || closeAllMutation.isPending}
+      />
+
+      <CandidateListDialog
+        open={viewCandidatesTarget !== null}
+        onOpenChange={(open) => !open && setViewCandidatesTarget(null)}
+        constituencyLabel={`${viewCandidatesTarget?.province ?? ''} เขต ${viewCandidatesTarget?.zone_number ?? ''}`}
+        candidates={viewCandidatesTarget?.candidates ?? []}
       />
     </div>
   )

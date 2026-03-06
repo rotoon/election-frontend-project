@@ -44,7 +44,11 @@ export function useElectionResults() {
     queryKey: ['election-results'],
     queryFn: async () => {
       const { data } = await api.get('/public/results')
-      return data.data
+      return {
+        ...data.data,
+        turnout: data.data.turnout || data.data.voteTurnout,
+      }
     },
+    staleTime: 10000,
   })
 }

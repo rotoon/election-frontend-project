@@ -4,56 +4,13 @@ import { LeftSidebar } from '@/components/LeftSidebar'
 import { HeroCard } from '@/components/dashboard/hero-card'
 import { ResultsSidebar } from '@/components/dashboard/results-sidebar'
 import { Button } from '@/components/ui/button'
-import { useDashboardStats } from '@/hooks/use-dashboard'
+import { useElectionResults } from '@/hooks/use-dashboard'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { useMemo, useRef, useState } from 'react'
 
-const FALLBACK_PARTIES = [
-  {
-    id: 1,
-    name: 'พลังประชาชน',
-    leader: 'อนุทิน ชาญวิริ',
-    seats: 193,
-    color: '#2d2e83',
-    logoUrl: '',
-  },
-  {
-    id: 2,
-    name: 'ประชาชน',
-    leader: 'ณัฐพล ร่วมประเสริ',
-    seats: 118,
-    color: '#f04e23',
-    logoUrl: '',
-  },
-  {
-    id: 3,
-    name: 'เพื่อไทย',
-    leader: 'เศรษฐา ทวีสิน',
-    seats: 74,
-    color: '#e10019',
-    logoUrl: '',
-  },
-  {
-    id: 4,
-    name: 'รวมไทยสร้างชาติ',
-    leader: 'พีระพันธุ์',
-    seats: 36,
-    color: '#2D328F',
-    logoUrl: '',
-  },
-  {
-    id: 5,
-    name: 'ประชาธิปัตย์',
-    leader: 'เฉลิมชัย',
-    seats: 25,
-    color: '#00AEEF',
-    logoUrl: '',
-  },
-]
-
 export default function Home() {
-  const { data, isLoading: loading } = useDashboardStats()
+  const { data, isLoading: loading } = useElectionResults()
 
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
   const [activeZIndex, setActiveZIndex] = useState<number | null>(null)
@@ -73,9 +30,7 @@ export default function Home() {
   }
 
   const topParties = useMemo(
-    () =>
-      data?.partyStats?.toSorted((a, b) => b.seats - a.seats) ??
-      FALLBACK_PARTIES,
+    () => data?.partyStats?.toSorted((a, b) => b.seats - a.seats) ?? [],
     [data?.partyStats],
   )
 
@@ -83,7 +38,10 @@ export default function Home() {
 
   return (
     <div className='flex flex-col lg:flex-row min-h-screen bg-[#121212] text-white font-sans overflow-hidden'>
-      <LeftSidebar />
+      <LeftSidebar
+        countingProgress={data?.countingProgress}
+        updateAt={data?.updateAt}
+      />
 
       {/* Center Hero Section */}
       <main className='flex-1 relative overflow-hidden flex flex-col items-center justify-center p-8 min-h-[500px] bg-[#151515]'>
@@ -104,25 +62,20 @@ export default function Home() {
           aria-hidden='true'
         />
 
-        <div className='relative w-full max-w-3xl flex items-center justify-center h-[450px] mt-10 lg:mt-0'>
+        <div className='relative w-full max-w-4xl flex items-center justify-center min-h-[450px] lg:h-[450px] mt-10 lg:mt-0 px-4'>
           {loading ? (
             <div className='flex items-center justify-center h-full'>
               <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#c5a059]' />
             </div>
           ) : (
-            <div className='flex items-end justify-center w-full relative h-[380px]'>
-              {/* 2nd Place (Left) */}
+            <div className='flex flex-col lg:flex-row items-center lg:items-end justify-center w-full relative gap-6 lg:gap-0 lg:h-[380px] py-10 lg:py-0'>
+              {/* 2nd Place (Left on Desktop, 2nd in Stack on Mobile) */}
               {top3[1] && (
                 <div
                   className={cn(
-                    'absolute left-[5%] md:left-1/2 md:-translate-x-[135%] bottom-0 w-[200px] md:w-[240px] transform -rotate-8 origin-bottom-right transition-[transform,opacity] duration-500 ease-out hover:-translate-y-4 hover:scale-105 animate-in fade-in slide-in-from-right-20',
+                    'relative lg:absolute lg:left-1/2 lg:-translate-x-[135%] lg:bottom-0 w-full max-w-[280px] md:max-w-[240px] lg:w-[240px] transform lg:-rotate-8 lg:origin-bottom-right transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-105',
                     activeZIndex === 1 ? 'z-50' : 'z-10',
                   )}
-                  style={{
-                    animationDuration: '800ms',
-                    animationDelay: '400ms',
-                    animationFillMode: 'both',
-                  }}
                   onMouseEnter={() => handleMouseEnter(1)}
                   onMouseLeave={() => handleMouseLeave(1)}
                 >
@@ -130,17 +83,13 @@ export default function Home() {
                 </div>
               )}
 
-              {/* 1st Place (Center) */}
+              {/* 1st Place (Center on Desktop, 1st in Stack on Mobile) */}
               {top3[0] && (
                 <div
                   className={cn(
-                    ' absolute left-1/2 -translate-x-1/2 bottom-8 w-[240px] md:w-[280px] transform transition-[transform,opacity] duration-500 ease-out hover:-translate-y-4 hover:scale-105 animate-in fade-in slide-in-from-bottom-24',
+                    'relative lg:absolute lg:left-1/2 lg:-translate-x-1/2 lg:bottom-8 w-full max-w-[300px] md:max-w-[280px] lg:w-[280px] transform transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-105 order-first lg:order-none',
                     activeZIndex === 0 ? 'z-50' : 'z-30',
                   )}
-                  style={{
-                    animationDuration: '600ms',
-                    animationFillMode: 'both',
-                  }}
                   onMouseEnter={() => handleMouseEnter(0)}
                   onMouseLeave={() => handleMouseLeave(0)}
                 >
@@ -148,18 +97,13 @@ export default function Home() {
                 </div>
               )}
 
-              {/* 3rd Place (Right) */}
+              {/* 3rd Place (Right on Desktop, 3rd in Stack on Mobile) */}
               {top3[2] && (
                 <div
                   className={cn(
-                    'absolute right-[5%] md:left-1/2 md:translate-x-[35%] bottom-0 w-[200px] md:w-[240px] transform rotate-8 origin-bottom-left transition-[transform,opacity] duration-500 ease-out hover:-translate-y-4 hover:scale-105 animate-in fade-in slide-in-from-left-20',
+                    'relative lg:absolute lg:left-1/2 lg:translate-x-[35%] lg:bottom-0 w-full max-w-[280px] md:max-w-[240px] lg:w-[240px] transform lg:rotate-8 lg:origin-bottom-left transition-all duration-500 ease-out hover:-translate-y-4 hover:scale-105',
                     activeZIndex === 2 ? 'z-50' : 'z-20',
                   )}
-                  style={{
-                    animationDuration: '800ms',
-                    animationDelay: '600ms',
-                    animationFillMode: 'both',
-                  }}
                   onMouseEnter={() => handleMouseEnter(2)}
                   onMouseLeave={() => handleMouseLeave(2)}
                 >
@@ -171,11 +115,11 @@ export default function Home() {
         </div>
 
         {/* Action Button */}
-        <div className='absolute bottom-8 z-40 flex justify-center w-full'>
+        <div className='absolute bottom-4 md:bottom-10 z-40 flex justify-center w-full'>
           <Button
             asChild
             size='lg'
-            className='font-bold bg-[#c5a059] hover:bg-[#b08d48] text-black rounded-xl px-8 h-12 shadow-lg shadow-[#c5a059]/20 transition-colors'
+            className='font-bold bg-[#c5a059] hover:bg-[#b08d48] text-black rounded-xl px-8 h-12 shadow-md shadow-[#c5a059]/20 transition-colors'
           >
             <Link href='/vote'>เข้าสู่ระบบลงคะแนน / จัดการ</Link>
           </Button>

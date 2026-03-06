@@ -7,7 +7,7 @@ interface PartyResult {
   id: number
   name: string
   seats: number
-  color: string
+  color?: string
   logoUrl: string
 }
 
@@ -62,7 +62,7 @@ export function ResultsSidebar({
                 idx === 0
                   ? {
                       borderBottomWidth: '2px',
-                      borderBottomColor: party.color,
+                      borderBottomColor: party.color || '#c5a059',
                     }
                   : {}
               }
@@ -85,7 +85,7 @@ export function ResultsSidebar({
                 ) : (
                   <div
                     className='w-7 h-7 rounded-full shrink-0 flex items-center justify-center shadow-sm'
-                    style={{ backgroundColor: party.color }}
+                    style={{ backgroundColor: party.color || '#c5a059' }}
                   >
                     <span className='text-[9px] font-bold text-white'>
                       {party.name[0]}
@@ -99,7 +99,7 @@ export function ResultsSidebar({
               <div className='w-16 text-center shrink-0'>
                 <span
                   className='font-black text-xl'
-                  style={{ color: party.color }}
+                  style={{ color: party.color || '#c5a059' }}
                 >
                   {party.seats}
                 </span>

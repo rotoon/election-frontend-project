@@ -8,9 +8,10 @@ export interface PublicConstituency {
 export interface DashboardPartyStat {
   id: number
   name: string
-  color: string
+  color?: string
   seats: number
   logoUrl: string
+  leader?: string
   [key: string]: string | number | undefined
 }
 
@@ -32,4 +33,5 @@ export interface DashboardData {
   countingProgress: number
   partyStats: DashboardPartyStat[]
   constituencies: DashboardConstituency[]
+  updateAt: Date
 }

@@ -11,7 +11,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Constituency } from '@/types/constituency'
-import { RefreshCw, Search, Pencil, Trash2 } from 'lucide-react'
+import { TableLoadingSpinner } from '@/components/shared/table-loading-spinner'
+import { Search, Pencil, Trash2 } from 'lucide-react'
 
 interface ConstituencyTableProps {
   constituencies: Constituency[]
@@ -57,19 +58,7 @@ export function ConstituencyTable({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell
-                colSpan={6}
-                className='h-40 text-center'
-              >
-                <div className='flex flex-col items-center justify-center gap-3'>
-                  <RefreshCw className='h-8 w-8 text-primary animate-spin opacity-20' />
-                  <span className='text-sm font-medium text-muted-foreground'>
-                    กำลังเรียกข้อมูลเขตเลือกตั้ง...
-                  </span>
-                </div>
-              </TableCell>
-            </TableRow>
+            <TableLoadingSpinner colSpan={6} />
           ) : constituencies.length === 0 ? (
             <TableRow>
               <TableCell

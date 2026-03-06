@@ -56,9 +56,7 @@ export function middleware(request: NextRequest) {
 
   // If no token, redirect to login
   if (!token) {
-    const loginUrl = new URL('/auth', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
+    return NextResponse.redirect(new URL('/auth', request.url))
   }
 
   // Decode token to check roles
@@ -67,9 +65,7 @@ export function middleware(request: NextRequest) {
 
     // Check if token is expired
     if (decoded.exp && decoded.exp * 1000 < Date.now()) {
-      const loginUrl = new URL('/auth', request.url)
-      loginUrl.searchParams.set('redirect', pathname)
-      return NextResponse.redirect(loginUrl)
+      return NextResponse.redirect(new URL('/auth', request.url))
     }
 
     // Get user roles from token
@@ -97,9 +93,7 @@ export function middleware(request: NextRequest) {
   } catch (error) {
     // Invalid token, redirect to login
     console.error('Middleware: Invalid token', error)
-    const loginUrl = new URL('/auth', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
+    return NextResponse.redirect(new URL('/auth', request.url))
   }
 
   return NextResponse.next()

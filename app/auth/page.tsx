@@ -20,7 +20,7 @@ export default function AuthPage() {
 
   if (registrationSuccess) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-neutral-100 p-4">
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="flex justify-center mb-4">
@@ -58,10 +58,10 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-neutral-100 p-4">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-neutral-900">
+          <CardTitle className="text-2xl font-bold text-foreground">
             ระบบเลือกตั้งออนไลน์
           </CardTitle>
           <CardDescription>เข้าสู่ระบบเพื่อใช้สิทธิเลือกตั้ง</CardDescription>

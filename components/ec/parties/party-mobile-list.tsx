@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui/button'
+import { MobileLoadingSkeleton } from '@/components/shared/table-loading-spinner'
 import { Party } from '@/types/party'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Edit, Image as ImageIcon, LayoutGrid, Trash } from 'lucide-react'
@@ -23,10 +24,10 @@ export function PartyMobileList({
     <div className='grid gap-4 md:hidden pt-4 pb-20'>
       <AnimatePresence mode='wait'>
         {isLoading ? (
-          <div className='flex flex-col items-center justify-center space-y-3 py-10 bg-white/50 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm'>
-            <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
-            <p className='text-slate-500 font-medium'>กำลังโหลดข้อมูล...</p>
-          </div>
+          <MobileLoadingSkeleton
+            count={3}
+            wrapperClassName='grid gap-4 md:hidden'
+          />
         ) : !parties || parties.length === 0 ? (
           <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic py-12 bg-white/50 backdrop-blur-sm rounded-xl border border-white/40 shadow-sm'>
             <div className='p-4 bg-slate-50 rounded-full'>

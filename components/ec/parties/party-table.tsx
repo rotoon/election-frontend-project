@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Party } from '@/types/party'
+import { TableLoadingSpinner } from '@/components/shared/table-loading-spinner'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Edit, Image as ImageIcon, LayoutGrid, Trash } from 'lucide-react'
 import Image from 'next/image'
@@ -54,19 +55,13 @@ export function PartyTable({
             <TableBody>
               <AnimatePresence mode='wait'>
                 {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className='h-40 text-center'>
-                      <div className='flex flex-col items-center justify-center space-y-3'>
-                        <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
-                        <p className='text-slate-500 font-medium'>
-                          กำลังโหลดข้อมูล...
-                        </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <TableLoadingSpinner colSpan={4} />
                 ) : !parties || parties.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className='h-60 text-center'>
+                    <TableCell
+                      colSpan={4}
+                      className='h-60 text-center'
+                    >
                       <div className='flex flex-col items-center justify-center text-slate-400 space-y-4 italic'>
                         <div className='p-4 bg-slate-50 rounded-full'>
                           <LayoutGrid className='w-12 h-12 text-slate-200' />

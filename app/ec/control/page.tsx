@@ -41,13 +41,17 @@ function ControlPageSkeleton() {
       <div className='bg-white/50 backdrop-blur-sm p-6 rounded-2xl border border-slate-200/60'>
         <div className='h-12 w-full bg-slate-100 rounded-xl animate-pulse' />
       </div>
-      <div className='border border-slate-200/60 rounded-2xl overflow-hidden shadow-sm'>
+      <div className='border border-slate-200/60 rounded-2xl bg-white overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]'>
         <div className='h-14 bg-slate-50 border-b border-slate-200/60' />
         {[1, 2, 3, 4, 5].map((i) => (
           <div
             key={i}
-            className='h-16 border-b border-slate-100 last:border-0 bg-white'
-          />
+            className='h-20 border-b border-slate-100 last:border-0 bg-white px-8 flex items-center gap-8'
+          >
+            <div className='h-5 w-24 bg-slate-100 rounded animate-pulse' />
+            <div className='h-9 w-40 bg-slate-100 rounded-xl animate-pulse' />
+            <div className='h-10 w-10 bg-slate-100 rounded-full animate-pulse ml-auto' />
+          </div>
         ))}
       </div>
     </div>

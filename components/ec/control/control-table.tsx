@@ -11,7 +11,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Constituency, ConstituencyCandidate } from '@/types/constituency'
-import { Lock, RefreshCw, Unlock, XCircle } from 'lucide-react'
+import { TableLoadingSpinner } from '@/components/shared/table-loading-spinner'
+import { Lock, Search, Unlock, XCircle } from 'lucide-react'
 
 interface ControlTableProps {
   constituencies: Constituency[]
@@ -52,28 +53,16 @@ export function ControlTable({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell
-                colSpan={4}
-                className='h-40 text-center'
-              >
-                <div className='flex flex-col items-center justify-center gap-3'>
-                  <RefreshCw className='h-8 w-8 text-primary animate-spin opacity-20' />
-                  <span className='text-sm font-medium text-muted-foreground'>
-                    กำลังเตรียมข้อมูลเขตเลือกตั้ง...
-                  </span>
-                </div>
-              </TableCell>
-            </TableRow>
+            <TableLoadingSpinner colSpan={5} />
           ) : constituencies.length === 0 ? (
             <TableRow>
               <TableCell
-                colSpan={4}
+                colSpan={5}
                 className='h-40 text-center'
               >
                 <div className='flex flex-col items-center justify-center gap-2'>
                   <div className='bg-slate-100 p-3 rounded-full'>
-                    <RefreshCw className='h-6 w-6 text-slate-400' />
+                    <Search className='h-6 w-6 text-slate-400' />
                   </div>
                   <span className='text-slate-500 font-medium'>
                     ไม่พบข้อมูลเขตเลือกตั้งในจังหวัดที่เลือก

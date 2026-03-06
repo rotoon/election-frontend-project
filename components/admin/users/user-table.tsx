@@ -16,10 +16,11 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { formatCitizenId } from '@/lib/utils'
+import { TableLoadingSpinner } from '@/components/shared/table-loading-spinner'
 import { User } from '@/types/user'
 import { format } from 'date-fns'
 import { th } from 'date-fns/locale'
-import { RefreshCw, Search, Shield } from 'lucide-react'
+import { Search, Shield } from 'lucide-react'
 
 interface UserTableProps {
   users: User[]
@@ -71,19 +72,7 @@ export function UserTable({
         </TableHeader>
         <TableBody>
           {isLoading ? (
-            <TableRow>
-              <TableCell
-                colSpan={8}
-                className='h-40 text-center'
-              >
-                <div className='flex flex-col items-center justify-center gap-3'>
-                  <RefreshCw className='h-8 w-8 text-primary animate-spin opacity-20' />
-                  <span className='text-sm font-medium text-muted-foreground'>
-                    กำลังเรียกข้อมูลผู้ใช้...
-                  </span>
-                </div>
-              </TableCell>
-            </TableRow>
+            <TableLoadingSpinner colSpan={8} />
           ) : users.length === 0 ? (
             <TableRow>
               <TableCell

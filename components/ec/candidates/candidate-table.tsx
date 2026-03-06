@@ -11,6 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { CandidateItem } from '@/types/candidate'
+import { TableLoadingSpinner } from '@/components/shared/table-loading-spinner'
 import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpDown, Edit, Trash, User, Users } from 'lucide-react'
 import Image from 'next/image'
@@ -106,19 +107,7 @@ export function CandidateTable({
             <TableBody>
               <AnimatePresence mode='wait'>
                 {isLoading ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={7}
-                      className='h-40 text-center'
-                    >
-                      <div className='flex flex-col items-center justify-center space-y-3'>
-                        <div className='w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin' />
-                        <p className='text-slate-500 font-medium'>
-                          กำลังโหลดข้อมูล...
-                        </p>
-                      </div>
-                    </TableCell>
-                  </TableRow>
+                  <TableLoadingSpinner colSpan={7} />
                 ) : !candidates || candidates.length === 0 ? (
                   <TableRow>
                     <TableCell

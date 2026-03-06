@@ -23,7 +23,7 @@ export default function PortalPage() {
 
   const handleLogout = async () => {
     logout()
-    router.push('/auth')
+    router.push('/')
   }
 
   useEffect(() => {

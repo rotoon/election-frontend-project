@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 interface PartyResult {
   id: number
@@ -9,6 +10,145 @@ interface PartyResult {
   seats: number
   color?: string
   logoUrl: string
+}
+
+function useAnimatedNumber(target: number, duration = 800, delay = 0) {
+  const [current, setCurrent] = useState(0)
+  const [started, setStarted] = useState(false)
+
+  useEffect(() => {
+    const delayTimer = setTimeout(() => setStarted(true), delay)
+    return () => clearTimeout(delayTimer)
+  }, [delay])
+
+  useEffect(() => {
+    if (!started || target === 0) {
+      if (!started) return
+      setCurrent(0)
+      return
+    }
+
+    const startTime = Date.now()
+    const startValue = 0
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const easeOutCubic = 1 - Math.pow(1 - progress, 3)
+      const value = Math.round(startValue + (target - startValue) * easeOutCubic)
+      setCurrent(value)
+
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }, [target, duration, started])
+
+  return current
+}
+
+function PartyRow({
+  party,
+  rank,
+  isFirst,
+  animationDelay,
+}: {
+  party: PartyResult
+  rank: number
+  isFirst: boolean
+  animationDelay: number
+}) {
+  const animatedSeats = useAnimatedNumber(party.seats, 800, animationDelay)
+  const [isVisible, setIsVisible] = useState(false)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), animationDelay)
+    return () => clearTimeout(timer)
+  }, [animationDelay])
+
+  return (
+    <div
+      className={cn(
+        'flex items-center py-3 border border-white/5 rounded-xl px-2 group',
+        'transition-all duration-500 ease-out',
+        'hover:bg-white/5 hover:scale-[1.02] hover:shadow-lg',
+        isFirst ? 'bg-white/[0.04] shadow-lg' : 'bg-[#151515]',
+        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4',
+      )}
+      style={
+        isFirst
+          ? {
+              borderBottomWidth: '2px',
+              borderBottomColor: party.color || '#c5a059',
+            }
+          : {}
+      }
+    >
+      <div className='w-8 flex justify-center'>
+        <div
+          className={cn(
+            'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300',
+            isFirst
+              ? 'bg-[#c5a059] text-black'
+              : 'bg-black/40 text-white/60 group-hover:text-white group-hover:bg-black/60',
+          )}
+        >
+          {rank}
+        </div>
+      </div>
+      <div className='flex-1 px-3 flex items-center space-x-3 overflow-hidden'>
+        {party.logoUrl ? (
+          <Image
+            src={party.logoUrl}
+            alt={party.name}
+            width={28}
+            height={28}
+            className='w-7 h-7 rounded-full object-cover bg-white shrink-0 transition-transform duration-300 group-hover:scale-110'
+            unoptimized
+          />
+        ) : (
+          <div
+            className='w-7 h-7 rounded-full shrink-0 flex items-center justify-center shadow-sm transition-transform duration-300 group-hover:scale-110'
+            style={{ backgroundColor: party.color || '#c5a059' }}
+          >
+            <span className='text-[9px] font-bold text-white'>
+              {party.name[0]}
+            </span>
+          </div>
+        )}
+        <span className='font-bold text-sm text-white/90 truncate group-hover:text-white transition-colors'>
+          {party.name}
+        </span>
+      </div>
+      <div className='w-16 text-center shrink-0'>
+        <span
+          className='font-black text-xl tabular-nums'
+          style={{ color: party.color || '#c5a059' }}
+        >
+          {animatedSeats}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className='space-y-3 mt-4'>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div
+          key={i}
+          className='h-14 bg-gradient-to-r from-white/5 via-white/10 to-white/5 rounded-xl animate-shimmer'
+          style={{
+            backgroundSize: '200% 100%',
+            animationDelay: `${i * 100}ms`,
+          }}
+        />
+      ))}
+    </div>
+  )
 }
 
 export function ResultsSidebar({
@@ -28,8 +168,9 @@ export function ResultsSidebar({
               จัดอันดับตามจำนวนที่นั่งอย่างไม่เป็นทางการ
             </p>
           </div>
-          <div className='bg-[#c5a059]/10 text-[#c5a059] px-3 py-1 rounded-full text-xs font-bold border border-[#c5a059]/20'>
-            LIVE
+          <div className='relative bg-[#c5a059]/10 text-[#c5a059] px-3 py-1 rounded-full text-xs font-bold border border-[#c5a059]/20 overflow-hidden'>
+            <span className='relative z-10'>LIVE</span>
+            <span className='absolute inset-0 rounded-full bg-[#c5a059]/30 animate-pulse' />
           </div>
         </div>
       </div>
@@ -42,69 +183,16 @@ export function ResultsSidebar({
         </div>
 
         {loading ? (
-          <div className='space-y-3 mt-4'>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className='h-14 bg-white/5 animate-pulse rounded-xl'
-              />
-            ))}
-          </div>
+          <LoadingSkeleton />
         ) : (
           parties.map((party, idx) => (
-            <div
+            <PartyRow
               key={party.id}
-              className={cn(
-                'flex items-center py-3 border border-white/5 transition-colors hover:bg-white/5 rounded-xl px-2 group',
-                idx === 0 ? 'bg-white/[0.04] shadow-lg' : 'bg-[#151515]',
-              )}
-              style={
-                idx === 0
-                  ? {
-                      borderBottomWidth: '2px',
-                      borderBottomColor: party.color || '#c5a059',
-                    }
-                  : {}
-              }
-            >
-              <div className='w-8 flex justify-center'>
-                <div className='w-6 h-6 rounded-full bg-black/40 flex items-center justify-center text-[10px] font-bold text-white/60 group-hover:text-white transition-colors'>
-                  {idx + 1}
-                </div>
-              </div>
-              <div className='flex-1 px-3 flex items-center space-x-3 overflow-hidden'>
-                {party.logoUrl ? (
-                  <Image
-                    src={party.logoUrl}
-                    alt={party.name}
-                    width={28}
-                    height={28}
-                    className='w-7 h-7 rounded-full object-cover bg-white shrink-0'
-                    unoptimized
-                  />
-                ) : (
-                  <div
-                    className='w-7 h-7 rounded-full shrink-0 flex items-center justify-center shadow-sm'
-                    style={{ backgroundColor: party.color || '#c5a059' }}
-                  >
-                    <span className='text-[9px] font-bold text-white'>
-                      {party.name[0]}
-                    </span>
-                  </div>
-                )}
-                <span className='font-bold text-sm text-white/90 truncate'>
-                  {party.name}
-                </span>
-              </div>
-              <div className='w-16 text-center shrink-0'>
-                <span
-                  className='font-black text-xl'
-                  style={{ color: party.color || '#c5a059' }}
-                >
-                  {party.seats}
-                </span>
-              </div>
-            </div>
+              party={party}
+              rank={idx + 1}
+              isFirst={idx === 0}
+              animationDelay={idx * 80}
+            />
           ))
         )}
       </div>

@@ -1,41 +1,88 @@
 'use client'
 
 import { LeftSidebar } from '@/components/LeftSidebar'
+import { DistrictResultsSidebar } from '@/components/dashboard/district-results-sidebar'
+import { useProvinces } from '@/hooks/use-location'
+import {
+  REGION_NAMES,
+  REGION_PROVINCES,
+  RegionName,
+} from '@/lib/constants/regions'
 import { cn } from '@/lib/utils'
 import { ChevronDown, Search } from 'lucide-react'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+
+// TODO: Replace with real constituency count from API when backend is ready
+const MOCK_CONSTITUENCY_COUNT: Record<string, number> = {
+  กรุงเทพมหานคร: 33,
+  นนทบุรี: 8,
+  ปทุมธานี: 7,
+  สมุทรปราการ: 8,
+  นครปฐม: 6,
+  เชียงใหม่: 10,
+  เชียงราย: 7,
+  ลำปาง: 5,
+  นครราชสีมา: 16,
+  ขอนแก่น: 11,
+  อุดรธานี: 10,
+  อุบลราชธานี: 11,
+  ชลบุรี: 10,
+  ระยอง: 4,
+  สงขลา: 9,
+  สุราษฎร์ธานี: 6,
+  นครศรีธรรมราช: 9,
+}
+
+function getMockConstituencyCount(provinceName: string): number {
+  return (
+    MOCK_CONSTITUENCY_COUNT[provinceName] ?? Math.floor(Math.random() * 5) + 1
+  )
+}
 
 export default function DistrictPage() {
   const [selectedDistrict, setSelectedDistrict] = useState<number | null>(null)
+  const [expandedRegion, setExpandedRegion] = useState<RegionName | null>(null)
+  const [selectedProvince, setSelectedProvince] = useState<string | null>(null)
 
-  // Map 33 districts into 9 columns x 4 rows
-  const districts = Array.from({ length: 33 }, (_, i) => {
-    const id = i + 1
-    let col = 1,
-      row = 1
-    if (id >= 1 && id <= 8) {
-      col = id
-      row = 1
-    } else if (id >= 9 && id <= 17) {
-      col = id - 8
-      row = 2
-    } else if (id >= 18 && id <= 26) {
-      col = id - 17
-      row = 3
-    } else if (id >= 27 && id <= 33) {
-      col = id - 24
-      row = 4
-    } // 27 -> col 3
+  const { data: provinces } = useProvinces()
 
-    return {
-      id,
-      col,
-      row,
-      // For visual accuracy with the screenshot, we use the same orange color
-      color: '#f97316',
-      leadingParty: 'ประชาชน',
+  const regionCounts = useMemo(() => {
+    if (!provinces) return {} as Record<RegionName, number>
+
+    const counts: Record<string, number> = {}
+    for (const region of REGION_NAMES) {
+      if (region === 'ทั่วประเทศ') {
+        counts[region] = provinces.reduce(
+          (sum, p) => sum + getMockConstituencyCount(p.name),
+          0,
+        )
+      } else {
+        const regionProvinces = REGION_PROVINCES[region]
+        const matchedProvinces = provinces.filter((p) =>
+          regionProvinces.includes(p.name),
+        )
+        counts[region] = matchedProvinces.reduce(
+          (sum, p) => sum + getMockConstituencyCount(p.name),
+          0,
+        )
+      }
     }
-  })
+    return counts as Record<RegionName, number>
+  }, [provinces])
+
+  const constituencyCount = selectedProvince
+    ? getMockConstituencyCount(selectedProvince)
+    : 0
+
+  const districts = useMemo(() => {
+    if (!selectedProvince) return []
+
+    return Array.from({ length: constituencyCount }, (_, i) => ({
+      id: i + 1,
+      color: '#c5a059',
+      leadingParty: 'ประชาชน',
+    }))
+  }, [selectedProvince, constituencyCount])
 
   return (
     <div className='flex flex-col lg:flex-row min-h-screen bg-[#121212] text-white font-sans overflow-hidden'>
@@ -51,34 +98,74 @@ export default function DistrictPage() {
             <ChevronDown className='w-5 h-5 text-white/50' />
           </div>
           <div className='flex flex-col text-sm font-medium'>
-            <button className='flex items-center justify-between px-4 py-4 hover:bg-white/5 border-b border-white/5 transition-colors'>
-              <span>ทั่วประเทศ</span>
-              <span className='text-white/40'>(400 เขต)</span>
-            </button>
-            <button className='flex items-center justify-between px-4 py-4 bg-[#c5a059] text-black font-bold shadow-sm'>
-              <span>กรุงเทพฯ</span>
-              <span className='text-black/70'>(33 เขต)</span>
-            </button>
-            <button className='flex items-center justify-between px-4 py-4 hover:bg-white/5 border-b border-white/5 transition-colors'>
-              <span>กลาง</span>
-              <span className='text-white/40'>(76 เขต)</span>
-            </button>
-            <button className='flex items-center justify-between px-4 py-4 hover:bg-white/5 border-b border-white/5 transition-colors'>
-              <span>ตะวันออก</span>
-              <span className='text-white/40'>(29 เขต)</span>
-            </button>
-            <button className='flex items-center justify-between px-4 py-4 hover:bg-white/5 border-b border-white/5 transition-colors'>
-              <span>เหนือ</span>
-              <span className='text-white/40'>(70 เขต)</span>
-            </button>
-            <button className='flex items-center justify-between px-4 py-4 hover:bg-white/5 border-b border-white/5 transition-colors'>
-              <span>อีสาน</span>
-              <span className='text-white/40'>(133 เขต)</span>
-            </button>
-            <button className='flex items-center justify-between px-4 py-4 hover:bg-white/5 border-b border-white/5 transition-colors'>
-              <span>ใต้</span>
-              <span className='text-white/40'>(59 เขต)</span>
-            </button>
+            {REGION_NAMES.map((region) => {
+              const isExpanded = expandedRegion === region
+              const count = regionCounts[region] ?? 0
+
+              const regionProvinceList =
+                region === 'ทั่วประเทศ'
+                  ? (provinces ?? [])
+                  : (provinces ?? []).filter((p) =>
+                      REGION_PROVINCES[region]?.includes(p.name),
+                    )
+
+              return (
+                <div key={region}>
+                  <button
+                    onClick={() => setExpandedRegion(isExpanded ? null : region)}
+                    className={cn(
+                      'w-full flex items-center justify-between px-4 py-3 transition-colors',
+                      isExpanded
+                        ? 'bg-[#c5a059] text-black font-bold'
+                        : 'hover:bg-white/5 border-b border-white/5',
+                    )}
+                  >
+                    <div className='flex items-center gap-2'>
+                      <ChevronDown
+                        className={cn(
+                          'w-4 h-4 transition-transform',
+                          isExpanded ? 'rotate-180' : '',
+                        )}
+                      />
+                      <span>{region}</span>
+                    </div>
+                    <span className={isExpanded ? 'text-black/70' : 'text-white/40'}>
+                      ({count} เขต)
+                    </span>
+                  </button>
+
+                  {isExpanded && (
+                    <div className='bg-[#111] border-b border-white/5'>
+                      {regionProvinceList.map((province) => {
+                        const isSelected = selectedProvince === province.name
+                        const provConstituencyCount = getMockConstituencyCount(province.name)
+
+                        return (
+                          <button
+                            key={province.id}
+                            onClick={() => {
+                              setSelectedProvince(province.name)
+                              setSelectedDistrict(null)
+                            }}
+                            className={cn(
+                              'w-full flex items-center justify-between px-6 py-2 text-xs transition-colors',
+                              isSelected
+                                ? 'bg-[#c5a059]/20 text-[#c5a059] font-semibold'
+                                : 'hover:bg-white/5 text-white/70',
+                            )}
+                          >
+                            <span>{province.name}</span>
+                            <span className='text-white/40'>
+                              {provConstituencyCount} เขต
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </div>
         </div>
       </aside>
@@ -86,140 +173,63 @@ export default function DistrictPage() {
       {/* 3. Center Grid Area (~45%) */}
       <main className='flex-[1.5] flex flex-col p-8 bg-[#f5f5f5] text-black overflow-y-auto max-h-screen border-r border-white/5'>
         <div className='w-full max-w-4xl mx-auto flex flex-col items-center pt-4'>
-          <h2 className='text-5xl font-black mb-12 tracking-tight text-[#333]'>
-            กรุงเทพมหานคร
-          </h2>
+          {selectedProvince ? (
+            <>
+              <h2 className='text-4xl font-black mb-2 tracking-tight text-[#333]'>
+                {selectedProvince}
+              </h2>
+              <p className='text-lg text-slate-500 mb-8'>
+                {constituencyCount} เขตเลือกตั้ง
+              </p>
 
-          {/* Map Grid */}
-          <div
-            className='grid gap-3 w-full max-w-[800px]'
-            style={{
-              gridTemplateColumns: 'repeat(auto-fill, minmax(70px, 1fr))',
-            }}
-          >
-            {districts.map((d) => (
-              <button
-                key={d.id}
-                onClick={() => setSelectedDistrict(d.id)}
+              <div
+                className='grid gap-3 w-full max-w-[800px]'
                 style={{
-                  backgroundColor:
-                    selectedDistrict === d.id ? '#c5a059' : d.color,
+                  gridTemplateColumns: `repeat(auto-fill, minmax(${constituencyCount > 20 ? '60px' : '70px'}, 1fr))`,
                 }}
-                className={cn(
-                  'aspect-square flex flex-col items-center justify-center font-black text-3xl text-white transition-colors duration-200',
-                  'hover:scale-[1.05] hover:z-10 focus:outline-none shadow-md',
-                  selectedDistrict === d.id &&
-                    'scale-[1.1] z-10 shadow-[0_10px_20px_rgba(197,160,89,0.4)] border-4 border-white',
-                )}
               >
-                {d.id}
-              </button>
-            ))}
-          </div>
-        </div>
-      </main>
-
-      {/* 4. Right Results Sidebar (~25%) */}
-      <aside className='w-full lg:w-[350px] xl:w-[400px] bg-[#1a1a1a] flex flex-col h-screen overflow-hidden z-20 shadow-[-10px_0_30px_rgba(0,0,0,0.5)] shrink-0'>
-        {/* Search */}
-        <div className='p-6 border-b border-white/10 bg-[#1e1e1e]'>
-          <h2 className='text-xl font-bold mb-4 text-[#c5a059] flex items-center space-x-2'>
-            <span>ผลคะแนนรายเขต</span>
-          </h2>
-          <div className='relative'>
-            <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/50' />
-            <input
-              type='text'
-              placeholder='ค้นหาด้วยชื่อจังหวัด เขต อำเภอ แขวง...'
-              className='w-full bg-[#121212] border border-white/10 text-white rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] transition-colors placeholder:text-white/30'
-            />
-          </div>
-        </div>
-
-        {/* Selected District Detail / List */}
-        <div className='flex-1 overflow-y-auto p-6 flex flex-col gap-6'>
-          {selectedDistrict ? (
-            <div className='animate-in fade-in slide-in-from-right-4 duration-300'>
-              <div className='bg-[#222] rounded-xl p-5 border border-white/10 shadow-lg'>
-                <div className='flex justify-between items-center mb-6 border-b border-white/10 pb-4'>
-                  <h3 className='font-black text-xl text-white'>
-                    กรุงเทพฯ เขต {selectedDistrict}
-                  </h3>
-                  <span className='text-xs font-bold text-[#c5a059] bg-[#c5a059]/10 px-2 py-1 rounded'>
-                    นับแล้ว 94%
-                  </span>
-                </div>
-
-                <div className='flex flex-col gap-5'>
-                  {/* Candidate 1 */}
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-4'>
-                      <span className='font-black text-xl w-4 text-white/50'>
-                        1
-                      </span>
-                      <div className='w-1.5 h-10 bg-[#f97316] rounded-full'></div>
-                      <div>
-                        <p className='font-bold text-[15px]'>ปารเมศ วิทยา</p>
-                        <p className='text-xs text-white/50 mt-0.5'>ประชาชน</p>
-                      </div>
-                    </div>
-                    <span className='font-black text-[#f97316] text-xl'>
-                      32,564
-                    </span>
-                  </div>
-
-                  {/* Candidate 2 */}
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-4'>
-                      <span className='font-black text-xl w-4 text-white/50'>
-                        2
-                      </span>
-                      <div className='w-1.5 h-10 bg-blue-500 rounded-full'></div>
-                      <div>
-                        <p className='font-bold text-[15px]'>พีรวุฒิ พิมพ์</p>
-                        <p className='text-xs text-white/50 mt-0.5'>
-                          พรรคอื่น ๆ
-                        </p>
-                      </div>
-                    </div>
-                    <span className='font-black text-white/90 text-xl'>
-                      14,018
-                    </span>
-                  </div>
-
-                  {/* Candidate 3 */}
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-4'>
-                      <span className='font-black text-xl w-4 text-white/50'>
-                        3
-                      </span>
-                      <div className='w-1.5 h-10 bg-red-500 rounded-full'></div>
-                      <div>
-                        <p className='font-bold text-[15px]'>สมชาย ใจดี</p>
-                        <p className='text-xs text-white/50 mt-0.5'>รักชาติ</p>
-                      </div>
-                    </div>
-                    <span className='font-black text-white/70 text-xl'>
-                      8,450
-                    </span>
-                  </div>
-                </div>
+                {districts.map((d) => (
+                  <button
+                    key={d.id}
+                    onClick={() => setSelectedDistrict(d.id)}
+                    className={cn(
+                      'aspect-square flex flex-col items-center justify-center font-black text-2xl transition-all duration-200 rounded-lg shadow-md',
+                      'hover:scale-[1.05] hover:z-10 focus:outline-none hover:brightness-110',
+                      selectedDistrict === d.id
+                        ? 'bg-white text-[#c5a059] scale-[1.15] z-10 shadow-[0_10px_25px_rgba(0,0,0,0.3)] ring-4 ring-[#c5a059]'
+                        : 'bg-[#c5a059] text-white',
+                    )}
+                  >
+                    {d.id}
+                  </button>
+                ))}
               </div>
-            </div>
+            </>
           ) : (
-            <div className='text-center text-white/40 h-full flex flex-col items-center justify-center space-y-4'>
-              <div className='w-16 h-16 rounded-full bg-white/5 flex items-center justify-center'>
-                <Search className='w-8 h-8 text-white/20' />
+            <div className='flex flex-col items-center justify-center h-full text-center'>
+              <div className='w-24 h-24 rounded-full bg-slate-200 flex items-center justify-center mb-6'>
+                <Search className='w-12 h-12 text-slate-400' />
               </div>
-              <p className='font-medium'>
-                คลิกเลือกเขตเลือกตั้งตรงกลาง
+              <h3 className='text-2xl font-bold text-slate-700 mb-2'>
+                เลือกจังหวัด
+              </h3>
+              <p className='text-slate-500'>
+                คลิกที่ภูมิภาคทางซ้ายแล้วเลือกจังหวัด
                 <br />
-                เพื่อดูผลคะแนนแบบละเอียด
+                เพื่อดูเขตเลือกตั้ง
               </p>
             </div>
           )}
         </div>
-      </aside>
+      </main>
+
+      <DistrictResultsSidebar
+        selectedProvince={selectedProvince}
+        selectedDistrict={selectedDistrict}
+        districts={districts}
+        constituencyCount={constituencyCount}
+        onSelectDistrict={setSelectedDistrict}
+      />
     </div>
   )
 }

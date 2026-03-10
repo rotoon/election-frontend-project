@@ -25,9 +25,8 @@ export default function VoterLayout({
   const isActive = (path: string) => pathname === path
 
   const navLinks = [
+    { href: '/', label: 'หน้าแรก' },
     { href: '/vote', label: 'คูหาเลือกตั้ง' },
-    { href: '/parties', label: 'พรรคการเมือง' },
-    { href: '/results', label: 'ผลการเลือกตั้ง' },
   ]
 
   return (

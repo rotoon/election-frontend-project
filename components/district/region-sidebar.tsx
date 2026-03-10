@@ -1,6 +1,5 @@
 'use client'
 
-import { getMockConstituencyCount } from '@/lib/mock-data/constituencies'
 import {
   REGION_NAMES,
   REGION_PROVINCES,
@@ -17,6 +16,7 @@ interface Province {
 interface RegionSidebarProps {
   provinces: Province[]
   regionCounts: Record<RegionName, number>
+  provinceCounts: Record<string, number>
   expandedRegion: RegionName | null
   selectedProvince: string | null
   onExpandRegion: (region: RegionName | null) => void
@@ -26,6 +26,7 @@ interface RegionSidebarProps {
 export function RegionSidebar({
   provinces,
   regionCounts,
+  provinceCounts,
   expandedRegion,
   selectedProvince,
   onExpandRegion,
@@ -55,7 +56,7 @@ export function RegionSidebar({
                 <button
                   onClick={() => onExpandRegion(isExpanded ? null : region)}
                   className={cn(
-                    'w-full flex items-center justify-between px-4 py-3 transition-colors',
+                    'text-md w-full flex items-center justify-between px-4 py-3 transition-colors',
                     isExpanded
                       ? 'bg-[#c5a059] text-black font-bold'
                       : 'hover:bg-white/5 border-b border-white/5',
@@ -81,23 +82,22 @@ export function RegionSidebar({
                   <div className='bg-[#111] border-b border-white/5'>
                     {regionProvinceList.map((province) => {
                       const isSelected = selectedProvince === province.name
-                      const provConstituencyCount = getMockConstituencyCount(
-                        province.name,
-                      )
+                      const provConstituencyCount =
+                        provinceCounts[province.name] ?? 0
 
                       return (
                         <button
                           key={province.id}
                           onClick={() => onSelectProvince(province.name)}
                           className={cn(
-                            'w-full flex items-center justify-between px-6 py-2 text-xs transition-colors',
+                            'w-full flex items-center justify-between px-6 py-2 text-md transition-colors',
                             isSelected
                               ? 'bg-[#c5a059]/20 text-[#c5a059] font-semibold'
                               : 'hover:bg-white/5 text-white/70',
                           )}
                         >
                           <span>{province.name}</span>
-                          <span className='text-white/40'>
+                          <span className='text-white/40 '>
                             {provConstituencyCount} เขต
                           </span>
                         </button>

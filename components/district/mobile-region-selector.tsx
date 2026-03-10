@@ -1,6 +1,5 @@
 'use client'
 
-import { getMockConstituencyCount } from '@/lib/mock-data/constituencies'
 import { SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import {
   REGION_NAMES,
@@ -19,6 +18,7 @@ interface Province {
 interface MobileRegionSelectorProps {
   provinces: Province[]
   regionCounts: Record<RegionName, number>
+  provinceCounts: Record<string, number>
   selectedProvince: string | null
   onSelectProvince: (name: string) => void
   onClose: () => void
@@ -27,6 +27,7 @@ interface MobileRegionSelectorProps {
 export function MobileRegionSelector({
   provinces,
   regionCounts,
+  provinceCounts,
   selectedProvince,
   onSelectProvince,
   onClose,
@@ -52,7 +53,10 @@ export function MobileRegionSelector({
                 )
 
           return (
-            <div key={region} className='border-b border-white/5'>
+            <div
+              key={region}
+              className='border-b border-white/5'
+            >
               <button
                 onClick={() => setExpandedRegion(isExpanded ? null : region)}
                 className={cn(
@@ -85,7 +89,7 @@ export function MobileRegionSelector({
                 <div className='bg-black/30'>
                   {regionProvinceList.map((province) => {
                     const isSelected = selectedProvince === province.name
-                    const provCount = getMockConstituencyCount(province.name)
+                    const provCount = provinceCounts[province.name] ?? 0
 
                     return (
                       <button

@@ -2,6 +2,7 @@ import { cn } from '@/lib/utils'
 import { Vote } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Button } from './ui/button'
 
 export function LeftSidebar({
   countingProgress = 0,
@@ -17,7 +18,10 @@ export function LeftSidebar({
       {/* Logo / Header */}
       <div className='flex items-center space-x-3'>
         <div className='bg-[#c5a059] text-black p-2 rounded-lg'>
-          <Vote className='w-6 h-6' aria-hidden='true' />
+          <Vote
+            className='w-6 h-6'
+            aria-hidden='true'
+          />
         </div>
         <div className='block'>
           <h1 className='font-black text-xl tracking-tight leading-none'>
@@ -57,13 +61,25 @@ export function LeftSidebar({
 
       <div className='mt-auto pt-8 border-t border-white/10 flex flex-col gap-4'>
         {/* Status in Sidebar */}
+        <div className='flex justify-center w-full'>
+          <Button
+            asChild
+            size='lg'
+            className='font-bold bg-[#c5a059] hover:bg-[#b08d48] text-black rounded-xl px-8 h-12 shadow-md shadow-[#c5a059]/20 transition-colors'
+          >
+            <Link href='/vote'>เข้าสู่ระบบลงคะแนน / จัดการ</Link>
+          </Button>
+        </div>
         <div className='bg-black/40 border border-white/5 rounded-xl p-4'>
           <div className='flex items-center space-x-2 text-sm font-medium mb-1'>
             <span className='relative flex h-2 w-2'>
               <span className='animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75'></span>
               <span className='relative inline-flex rounded-full h-2 w-2 bg-green-500'></span>
             </span>
-            <span className='text-white/60 text-xs' suppressHydrationWarning>
+            <span
+              className='text-white/60 text-xs'
+              suppressHydrationWarning
+            >
               อัปเดตล่าสุด:{' '}
               {updateAt
                 ? new Date(updateAt).toLocaleString('th-TH', {

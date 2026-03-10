@@ -79,7 +79,10 @@ export default function Home() {
                   onMouseEnter={() => handleMouseEnter(1)}
                   onMouseLeave={() => handleMouseLeave(1)}
                 >
-                  <HeroCard party={top3[1]} rank={2} />
+                  <HeroCard
+                    party={top3[1]}
+                    rank={2}
+                  />
                 </div>
               )}
 
@@ -93,7 +96,10 @@ export default function Home() {
                   onMouseEnter={() => handleMouseEnter(0)}
                   onMouseLeave={() => handleMouseLeave(0)}
                 >
-                  <HeroCard party={top3[0]} rank={1} />
+                  <HeroCard
+                    party={top3[0]}
+                    rank={1}
+                  />
                 </div>
               )}
 
@@ -107,27 +113,22 @@ export default function Home() {
                   onMouseEnter={() => handleMouseEnter(2)}
                   onMouseLeave={() => handleMouseLeave(2)}
                 >
-                  <HeroCard party={top3[2]} rank={3} />
+                  <HeroCard
+                    party={top3[2]}
+                    rank={3}
+                  />
                 </div>
               )}
             </div>
           )}
         </div>
-
-        {/* Action Button */}
-        <div className='absolute bottom-4 md:bottom-10 z-40 flex justify-center w-full'>
-          <Button
-            asChild
-            size='lg'
-            className='font-bold bg-[#c5a059] hover:bg-[#b08d48] text-black rounded-xl px-8 h-12 shadow-md shadow-[#c5a059]/20 transition-colors'
-          >
-            <Link href='/vote'>เข้าสู่ระบบลงคะแนน / จัดการ</Link>
-          </Button>
-        </div>
       </main>
 
       {/* Right Sidebar Results */}
-      <ResultsSidebar parties={topParties} loading={loading} />
+      <ResultsSidebar
+        parties={topParties}
+        loading={loading}
+      />
     </div>
   )
 }

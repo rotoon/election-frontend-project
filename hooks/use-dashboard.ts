@@ -1,7 +1,26 @@
 import api from '@/lib/api'
 import { useQuery } from '@tanstack/react-query'
 
-import { DashboardData, PublicConstituency } from '@/types/dashboard'
+import {
+  DashboardData,
+  PublicConstituency,
+  ProvincesWithConstituenciesResponse,
+  ApiConstituencyResultResponse,
+} from '@/types/dashboard'
+
+export function useProvincesWithConstituencies() {
+  return useQuery<ProvincesWithConstituenciesResponse>({
+    queryKey: ['provinces-with-constituencies'],
+    queryFn: async () => {
+      const { data } = await api.get('/public/provinces-with-constituencies')
+      const payload = data.data
+      if (payload?.updateAt) {
+        payload.updateAt = new Date(payload.updateAt)
+      }
+      return payload
+    },
+  })
+}
 
 export function usePublicConstituencies() {
   return useQuery<PublicConstituency[]>({
@@ -25,20 +44,6 @@ export function usePublicConstituencies() {
   })
 }
 
-export function useDashboardStats() {
-  return useQuery<DashboardData>({
-    queryKey: ['dashboard-stats'],
-    queryFn: async () => {
-      const { data } = await api.get('/public/stats')
-      return {
-        ...data.data,
-        turnout: data.data.turnout || data.data.voteTurnout,
-      }
-    },
-    staleTime: 10000,
-  })
-}
-
 export function useElectionResults() {
   return useQuery<DashboardData>({
     queryKey: ['election-results'],
@@ -50,5 +55,18 @@ export function useElectionResults() {
       }
     },
     staleTime: 10000,
+  })
+}
+
+export function useConstituencyResult(id: number | null) {
+  return useQuery<ApiConstituencyResultResponse>({
+    queryKey: ['constituency-result', id],
+    queryFn: async () => {
+      if (!id) throw new Error('No id provided')
+      // Ensure the endpoint exactly matches the user requirement
+      const { data } = await api.get(`/public/contstituencies-result/${id}`)
+      return data.data
+    },
+    enabled: !!id,
   })
 }

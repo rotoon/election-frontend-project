@@ -28,6 +28,8 @@ export function DistrictGrid({
   onClearSelection,
   showClearButton = true,
 }: DistrictGridProps) {
+  const sortedDistricts = [...districts].sort((a, b) => a.id - b.id)
+
   return (
     <>
       <div className='flex items-center gap-2 text-[#c5a059] mb-2'>
@@ -41,23 +43,16 @@ export function DistrictGrid({
         {constituencyCount} เขตเลือกตั้ง
       </p>
 
-      <div
-        className='grid gap-2 sm:gap-3 w-full'
-        style={{
-          gridTemplateColumns: `repeat(auto-fill, minmax(${
-            constituencyCount > 20 ? '52px' : '60px'
-          }, 1fr))`,
-        }}
-      >
-        {districts.map((d) => (
+      <div className='flex flex-wrap justify-center gap-3 sm:gap-4 w-full'>
+        {sortedDistricts.map((d) => (
           <button
             key={d.id}
             onClick={() => onSelectDistrict(d.id)}
             className={cn(
-              'aspect-square flex flex-col items-center justify-center font-black text-lg sm:text-xl lg:text-2xl transition-all duration-200 rounded-lg shadow-md',
+              'w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] flex flex-col items-center justify-center font-black text-xl sm:text-2xl transition-all duration-200 rounded-lg shadow-md shrink-0',
               'hover:scale-[1.05] hover:z-10 focus:outline-none hover:brightness-110 active:scale-95',
               selectedDistrict === d.id
-                ? 'bg-white text-[#c5a059] scale-105 sm:scale-110 lg:scale-[1.15] z-10 shadow-[0_8px_20px_rgba(0,0,0,0.25)] sm:shadow-[0_10px_25px_rgba(0,0,0,0.3)] ring-2 sm:ring-4 ring-[#c5a059]'
+                ? 'bg-white text-[#c5a059] scale-105 sm:scale-110 z-10 shadow-[0_8px_20px_rgba(0,0,0,0.25)] sm:shadow-[0_10px_25px_rgba(0,0,0,0.3)] ring-2 sm:ring-4 ring-[#c5a059]'
                 : 'bg-[#c5a059] text-white',
             )}
           >

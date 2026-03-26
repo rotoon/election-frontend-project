@@ -272,7 +272,7 @@ export default function CandidatesListPage() {
         open={!!selectedCandidate}
         onOpenChange={(open) => !open && setSelectedCandidate(null)}
       >
-        <DialogContent className="max-w-xl bg-[#1e1e1e] border-white/10 text-white rounded-2xl">
+        <DialogContent className="max-w-3xl bg-[#1e1e1e] border-white/10 text-white rounded-2xl">
           <DialogHeader>
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 mb-4">
               <div className="w-32 h-44 sm:w-40 sm:h-56 rounded-2xl bg-[#121212] border border-white/10 flex items-center justify-center overflow-hidden shrink-0 relative shadow-2xl">
@@ -294,7 +294,7 @@ export default function CandidatesListPage() {
                     {selectedCandidate?.full_name}
                   </DialogTitle>
                   <div
-                    className="px-3 py-1 rounded-lg font-black text-white shadow-md border border-white/10"
+                    className="px-3 py-1 rounded-lg font-black text-white shadow-md border border-white/10 shrink-0 mr-6"
                     style={{
                       backgroundColor:
                         selectedCandidate?.party?.color || "#c5a059",

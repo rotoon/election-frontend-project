@@ -32,6 +32,7 @@ export function useLoginMutation() {
   const router = useRouter()
   const setUser = useAuthStore((state) => state.setUser)
   const setToken = useAuthStore((state) => state.setToken)
+  const logout = useAuthStore((state) => state.logout)
 
   return useMutation({
     mutationFn: async (credentials: LoginUserInput) => {
@@ -44,6 +45,7 @@ export function useLoginMutation() {
       setToken(data.accessToken)
 
       try {
+        // Temporarily disable the 401 interceptor's logout toprevent cookie removal during login flow
         const { data: res } = await api.get<MeResponse>('/auth/me')
         const me = res
 
@@ -77,7 +79,10 @@ export function useLoginMutation() {
         else router.push('/vote')
       } catch (error) {
         console.error('Failed to fetch user details:', error)
-        toast.error('เข้าสู่ระบบสำเร็จแต่ไม่สามารถดึงข้อมูลผู้ใช้ได้')
+        // Clear auth state on /auth/me failure since the token is invalid
+        logout()
+        toast.error('เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง')
+        router.push('/auth')
       }
     },
     onError: (error: unknown) => {

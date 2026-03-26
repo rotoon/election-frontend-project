@@ -15,7 +15,7 @@ export default function AdminLayout({
 
   const handleLogout = async () => {
     logout()
-    router.push('/')
+    router.push('/auth')
   }
 
   const navItems = [

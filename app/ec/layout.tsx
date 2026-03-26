@@ -11,7 +11,7 @@ export default function ECLayout({ children }: { children: React.ReactNode }) {
 
   const handleLogout = async () => {
     logout()
-    router.push('/')
+    router.push('/auth')
   }
 
   const navItems = [

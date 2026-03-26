@@ -19,7 +19,7 @@ export default function VoterLayout({
 
   const handleLogout = async () => {
     logout()
-    router.push('/')
+    router.push('/auth')
   }
 
   const isActive = (path: string) => pathname === path

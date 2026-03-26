@@ -17,8 +17,13 @@ export function useCandidates(constituencyId?: string | number | null) {
   return useQuery({
     queryKey: ['candidates', constituencyId],
     queryFn: async () => {
-      const { data } = await api.get('/voter/candidates')
-      const candidates = data.data || []
+      const { data } = await api.get('/public/candidates', {
+        params: {
+          limit: 1000,
+          ...(constituencyId ? { constituencyId } : {}),
+        },
+      })
+      const candidates = data.candidate || data.data || []
       return transformCandidates(candidates) as Candidate[]
     },
   })

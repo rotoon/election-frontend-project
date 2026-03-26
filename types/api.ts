@@ -40,6 +40,14 @@ export interface ApiCandidate {
   candidatePolicy?: string | null
   imageUrl: string
   party?: ApiPartyInCandidate
+  constituency?: {
+    id: number
+    number: number
+    province: {
+      id: number
+      name: string
+    }
+  }
 }
 
 export interface ApiPartyInCandidate {

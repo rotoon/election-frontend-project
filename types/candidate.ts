@@ -115,6 +115,11 @@ export interface Candidate {
   candidate_number: number
   national_id?: string
   image_url: string
+  policy?: string
+  constituency?: {
+    number: number
+    province: string
+  } | null
   party?: {
     id: number
     name: string

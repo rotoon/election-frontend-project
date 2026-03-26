@@ -14,7 +14,7 @@ export function LeftSidebar({
   const pathname = usePathname()
 
   return (
-    <aside className='w-full lg:w-[280px] p-6 flex flex-col gap-8 border-b lg:border-r border-white/5 bg-[#121212] z-10'>
+    <aside className='w-full lg:w-[280px] lg:h-screen lg:sticky lg:top-0 p-6 flex flex-col gap-8 border-b lg:border-r border-white/5 bg-[#121212] z-10'>
       {/* Logo / Header */}
       <div className='flex items-center space-x-3'>
         <div className='bg-[#c5a059] text-black p-2 rounded-lg'>
@@ -56,6 +56,28 @@ export function LeftSidebar({
           )}
         >
           <span>รายเขต</span>
+        </Link>
+        <Link
+          href='/parties-list'
+          className={cn(
+            'flex justify-center items-center space-x-3 px-4 py-4 rounded-xl font-bold transition-colors',
+            pathname === '/parties-list'
+              ? 'bg-[#c5a059] text-black shadow-md shadow-[#c5a059]/20'
+              : 'bg-[#1e1e1e] text-white/70 hover:text-white hover:bg-white/10 border border-white/5',
+          )}
+        >
+          <span>พรรคการเมือง</span>
+        </Link>
+        <Link
+          href='/candidates-list'
+          className={cn(
+            'flex justify-center items-center space-x-3 px-4 py-4 rounded-xl font-bold transition-colors',
+            pathname === '/candidates-list'
+              ? 'bg-[#c5a059] text-black shadow-md shadow-[#c5a059]/20'
+              : 'bg-[#1e1e1e] text-white/70 hover:text-white hover:bg-white/10 border border-white/5',
+          )}
+        >
+          <span>ผู้สมัคร</span>
         </Link>
       </nav>
 

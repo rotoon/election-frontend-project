@@ -59,6 +59,11 @@ export interface TransformedCandidate {
   full_name: string
   candidate_number: number
   image_url: string
+  policy?: string
+  constituency?: {
+    number: number
+    province: string
+  } | null
   party: {
     id: number
     name: string
@@ -78,12 +83,19 @@ export function transformCandidate(c: ApiCandidate): TransformedCandidate {
     full_name: fullName,
     candidate_number: c.number,
     image_url: c.imageUrl,
+    policy: policy || undefined,
+    constituency: c.constituency
+      ? {
+          number: c.constituency.number,
+          province: c.constituency.province.name,
+        }
+      : null,
     party: c.party
       ? {
           id: c.party.id,
           name: c.party.name,
           logo_url: c.party.logoUrl,
-          policy: policy,
+          policy: policy || undefined,
         }
       : null,
   }

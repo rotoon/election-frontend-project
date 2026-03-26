@@ -17,6 +17,8 @@ const publicRoutes = [
   '/auth/login',
   '/auth/register',
   '/parties',
+  '/parties-list',
+  '/candidates-list',
   '/results',
   '/district',
   '/api/auth/login',
